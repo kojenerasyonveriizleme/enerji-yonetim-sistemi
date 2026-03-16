@@ -1,0 +1,153 @@
+/**
+ * KOJENERASYON TAKIP SISTEMI - CONFIG
+ * Merkezi yapilandirma dosyasi
+ */
+
+const CONFIG = {
+    // Uygulama ayarlari
+    APP_NAME: 'Kojenerasyon Takip Sistemi',
+    VERSION: '1.0.0',
+    
+    // Motor konfigurasyonu
+    MOTORS: [
+        { id: 'GM1', name: 'JENBACH 1', color: '#2563eb' },
+        { id: 'GM2', name: 'JENBACH 2', color: '#10b981' },
+        { id: 'GM3', name: 'JENBACH 3', color: '#f59e0b' }
+    ],
+    
+    // Saat dilimleri (6 saatlik periyotlar)
+    HOURS: ['00:00', '06:00', '12:00', '18:00'],
+    
+    // Enerji input alanlari
+    ENERGY_FIELDS: ['uretim', 'tuketim', 'devir', 'sicaklik'],
+    
+    // Varsayilan kullanici (ilk kurulum icin)
+    DEFAULT_USERS: [
+        { username: 'admin', password: 'admin123', name: 'Admin', role: 'admin' },
+        { username: 'operator', password: 'op123', name: 'Operator', role: 'operator' },
+        { username: 'yakupcan', password: 'ykp123', name: 'YAKUP CAN CİN', role: 'operator' },
+        { username: 'ibrahimogun', password: 'ios123', name: 'İBRAHİM OĞUN ŞAHİN', role: 'operator' },
+        { username: 'oguzhan', password: 'oys123', name: 'OGUZHAN YAYLALI', role: 'operator' },
+        { username: 'altan', password: 'aths123', name: 'ALTAN HUNOĞLU', role: 'operator' },
+        { username: 'user', password: 'user123', name: 'Normal Kullanici', role: 'user' }
+    ],
+
+    // Sabit operatör listesi (dropdown için)
+    FIXED_OPERATORS: [
+        'YAKUP CAN CİN',
+        'İBRAHİM OĞUN ŞAHİN', 
+        'OGUZHAN YAYLALI',
+        'ALTAN HUNOĞLU'
+    ],
+    
+    // Tarih formatı yardımcı fonksiyonu (Türkçe format)
+    formatDate: function(date = new Date()) {
+        if (typeof date === 'string') date = new Date(date);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    },
+    
+    // Tarih ve saat formatı (Türkçe format)
+    formatDateTime: function(date = new Date()) {
+        if (typeof date === 'string') date = new Date(date);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    },
+    
+    // Tüm tarih input'larını otomatik doldur
+    autoFillDates: function() {
+        // DOM'un tamamen yüklenmesi için kısa bir gecikme
+        setTimeout(() => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`; // HTML date input formatı
+            
+            const dateInputs = [
+                'hourly-date',
+                'daily-date',
+                'vardiya-tarih',
+                'ariza-baslangic-tarih',
+                'ariza-bitis-tarih',
+                'steam-date',
+                'kojen-motor-date',
+                'kojen-enerji-date',
+                'tarih-planli',
+                'tarih-devam',
+                'tarih-cozuldu'
+            ];
+            
+            let filledCount = 0;
+            dateInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input && input.type === 'date') {
+                    input.value = dateString;
+                    if (!input.hasAttribute('readonly') && !input.hasAttribute('max')) {
+                        input.max = dateString;
+                    }
+                    filledCount++;
+                } else if (input) {
+                    // Input var ama date değil - sessizce geç
+                }
+            });
+            // Debug mesajı kaldırıldı
+        }, 100); // 100ms gecikme
+    },
+    
+    // LocalStorage anahtarlari
+    STORAGE_KEYS: {
+        USERS: 'kojen_users',
+        CURRENT_USER: 'kojen_current_user',
+        REMEMBER_ME: 'kojen_remember',
+        SHEETS_URL: 'sheets_url',
+        BAKIM_DATA: 'kojen_bakim',
+        ARIZA_DATA: 'kojen_ariza',
+        MOTOR_STATUS: 'kojen_motor_status',
+        MOTOR_TOGGLE_STATUS: 'kojen_motor_toggle_status'
+    },
+    
+    // Demo mod (API baglantisi yoksa) - TAMAMEN PASIF
+    DEMO_MODE: false,
+    
+    // Debug mod (sadece geliştirme için)
+    DEBUG_MODE: true,
+    
+    // Google Sheets Web App URL'leri (API Key gerekmez)
+    GOOGLE_SHEETS_WEB_APP_URLS: {
+        unified: 'https://script.google.com/macros/s/AKfycbzsu_AsckzffzmoLQ1UaSW8XQxEF2t8zzgkykP9g11Jh7hldFXcUAzgKDNvPYacbzw/exec', // En yeni deploy edilen unified URL
+        buhar: 'https://script.google.com/macros/s/AKfycbyTuu7MEU2cvbyZ4RHurqNVU9x2-3-uyOXLoqXs01Y2JSTmSfliJwVP51NSoRMerikI/exec',
+        saatlik: 'https://script.google.com/macros/s/AKfycbwf_e62Ky3zU4EmTMg25dMY6UgzGGg3JK1k7U6K_CYJvuVkRATh62-U7ouJHgJt1HYO/exec',
+        vardiya: 'https://script.google.com/macros/s/AKfycbwOvfOlpWoVBmw82MVfLjx5rO9NCFF6qhmfrorHXtltGhORPXv1z0BKTGtP95Xp9Jfb/exec',
+        gunluk_enerji: 'https://script.google.com/macros/s/AKfycbySueMR25G2FxZPe2ZC_IArdvROg77yzELFRHHM7jnMaa-luT1i2_XaqMAt67Vy0lIe/exec',
+        kullanici: 'https://script.google.com/macros/s/AKfycbwEPH0D2wkRVd9y483SQnaya4n3mr9dnYNlObREze-GPSjTO-fCxlZtkWDwrKkdTB7t/exec',
+        gunluk_enerji_yeni: 'https://script.google.com/macros/s/AKfycbw-3C6Ulj7ou_rJ6rgmrKsalKRtE70xEUbKA8cH89JSmQAOmRPi6JAMxhSNsFpGNxUT/exec',
+        gunluk_enerji_alternatif: 'https://script.google.com/macros/s/AKfycbwhyJ15sDwLFF1dFj-B4Mw7mcu2rpRNLo25w8d3-NQyhpEQD_8UV8H782ty53hyF6bU/exec',
+        kojen_motor: 'https://script.google.com/macros/s/AKfycbxLJUruVLGLU_6okzdO63t3F3v80mH8mjXtnT0ri5PdgCqO1BVP2lorBhiPkFWoKVxf/exec',
+        kojen_enerji: 'https://script.google.com/macros/s/AKfycby6rScxJ2XAJPMRd9C6CiY_A-kp4jcH5I9tHX_J0hVOW-uC75lAknPyp-um_62BKWPL/exec',
+        
+         // Diğer modüller geçici olarak devre dışı
+        // kojen_enerji: 'URL',
+        // vardiya: 'URL',
+        // bakim: 'URL',
+        // ariza: 'URL'
+    },
+    
+    // Google Apps Script URL'leri (yeni format)
+    googleAppsScript: {
+        dailyEnergyUrl: 'https://script.google.com/macros/s/AKfycbzDiR-gKJPCNxs-odRtt6yp1Qz324rn6jw26K8BogagHNKd8dB-1Yik61j-WRc4Z2xg/exec'
+    },
+    
+    // Geriye dönük uyumluluk için eski URL
+    GOOGLE_SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbxm80ryVEsRr0Jrg_PAAJe-8e7eS9EYIbdlbpSYTUHSXceLVVkMRNL9Zy430IZ_APVZ/exec'
+};
+
+// Config'i global olarak erisilebilir yap
+window.CONFIG = CONFIG;

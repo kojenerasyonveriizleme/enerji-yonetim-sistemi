@@ -1,0 +1,620 @@
+/**
+ * KOJENERASYON TAKIP SISTEMI - BUHAR VERILERI CSS
+ * Buhar verileri sayfası stil dosyası
+ */
+
+/* ===== CSS VARIABLES ===== */
+:root {
+    /* Light Theme */
+    --bg-page: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --bg-table: #ffffff;
+    --bg-header: linear-gradient(135deg, #48bb78, #38a169);
+    --bg-button-primary: linear-gradient(135deg, #667eea, #764ba2);
+    --bg-button-secondary: #e2e8f0;
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --text-white: #ffffff;
+    --border-color: #e2e8f0;
+    --border-light: rgba(255, 255, 255, 0.2);
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.05);
+    --hover-bg: #f8fafc;
+    --accent-color: #4299e1;
+    --success-color: #38a169;
+    --danger-color: #e53e3e;
+}
+
+.dark {
+    /* Dark Theme */
+    --bg-page: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    --bg-card: rgba(26, 32, 44, 0.95);
+    --bg-table: #1a202c;
+    --bg-header: linear-gradient(135deg, #2d3748, #1a202c);
+    --bg-button-primary: linear-gradient(135deg, #4299e1, #3182ce);
+    --bg-button-secondary: #2d3748;
+    --text-primary: #e5e7eb;
+    --text-secondary: #cbd5e0;
+    --text-white: #ffffff;
+    --border-color: #2d3748;
+    --border-light: rgba(255, 255, 255, 0.1);
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.2);
+    --hover-bg: #2d3748;
+    --accent-color: #4299e1;
+    --success-color: #38a169;
+    --danger-color: #e53e3e;
+}
+
+/* ===== DISABLED INPUT STYLES ===== */
+.steam-form-container input.disabled,
+.steam-form-container textarea.disabled {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+.steam-form-container .btn-disabled {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
+/* ===== BUHAR VERILERI SAYFA GENEL ===== */
+#buhar-page {
+    background: var(--bg-page);
+    min-height: 100vh;
+}
+
+#buhar-page .page-header {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-light);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px var(--shadow-light);
+}
+
+#buhar-page .page-header h1 {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#buhar-page .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* ===== BUHAR FORM KONTAINER ===== */
+.steam-form-container {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    border: 1px solid var(--border-light);
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.steam-form-container .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.steam-form-container .form-header h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.date-time-info {
+    background: var(--bg-button-primary);
+    color: var(--text-white);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+/* ===== FORM GRUPLARI ===== */
+#steam-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#steam-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+#steam-form .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+#steam-form label {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#steam-form label::before {
+    content: '💨';
+    font-size: 1rem;
+}
+
+#steam-form input[type="date"],
+#steam-form input[type="time"],
+#steam-form input[type="number"],
+#steam-form textarea {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+}
+
+#steam-form input:focus,
+#steam-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: var(--bg-table);
+}
+
+#steam-form textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* ===== FORM BUTONLARI ===== */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.form-actions button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    justify-content: center;
+}
+
+#buhar-page .form-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: var(--text-white) !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+    border: none !important;
+    padding: 0.8rem 1.5rem !important;
+    min-width: 120px !important;
+    transform: none !important;
+}
+
+#buhar-page .form-actions .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+#buhar-page .form-actions .btn-secondary {
+    background: #ffffff !important;
+    color: #4a5568 !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+    padding: 0.8rem 1.5rem !important;
+    min-width: 120px !important;
+    transform: none !important;
+}
+
+#buhar-page .form-actions .btn-secondary:hover {
+    background: #f8fafc !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-full-width {
+    width: 100%;
+}
+
+/* ===== GOOGLE SHEETS VERI BÖLÜMÜ ===== */
+.google-sheets-data-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    border: 1px solid var(--border-light);
+    margin-top: 2rem;
+}
+
+.google-sheets-data-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.google-sheets-data-section .section-header h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.google-sheets-table-container {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    border: 1px solid var(--border-light);
+    overflow-x: auto;
+}
+
+.google-sheets-table {
+    background: var(--bg-table);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    border: 1px solid var(--border-light);
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+}
+
+.google-sheets-table th {
+    background: var(--bg-header);
+    color: var(--text-white);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+.google-sheets-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.google-sheets-table tr:hover {
+    background: var(--hover-bg);
+}
+
+.google-sheets-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== VERI BÖLÜMÜ KALDIRILDI ===== */
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.record-count {
+    background: var(--success-color);
+    color: var(--text-white);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(72, 187, 120, 0.3);
+}
+
+.btn-small {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--accent-color);
+    color: var(--text-white);
+    box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+}
+
+.btn-small:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+}
+
+/* ===== BUHAR TABLOSU ===== */
+.steam-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.steam-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-table);
+    font-size: 0.9rem;
+}
+
+.steam-table thead {
+    background: var(--bg-header);
+    color: var(--text-white);
+}
+
+.steam-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    white-space: nowrap;
+}
+
+.steam-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.steam-table tbody tr:hover {
+    background: var(--hover-bg);
+    transform: scale(1.01);
+}
+
+.steam-table tbody tr.even-row {
+    background: var(--shadow-medium);
+}
+
+.steam-table td {
+    padding: 0.75rem 1rem;
+    border: none;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.steam-table td.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.steam-table .btn-edit,
+.steam-table .btn-delete {
+    padding: 0.4rem 0.6rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.steam-table .btn-edit {
+    background: var(--success-color);
+    color: var(--text-white);
+}
+
+.steam-table .btn-edit:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+}
+
+.steam-table .btn-delete {
+    background: var(--danger-color);
+    color: var(--text-white);
+}
+
+.steam-table .btn-delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(245, 101, 101, 0.4);
+}
+
+/* ===== NO DATA MESSAGE ===== */
+.no-data-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 2px dashed var(--border-color);
+}
+
+.no-data-message p {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.no-data-message p:first-child {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* ===== RESPONSIVE TASARIM ===== */
+@media (max-width: 768px) {
+    #buhar-page .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    #buhar-page .page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .steam-form-container .form-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    #steam-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .steam-table-container {
+        font-size: 0.8rem;
+    }
+    
+    .steam-table th,
+    .steam-table td {
+        padding: 0.5rem;
+    }
+    
+    .steam-table td.action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .steam-form-container {
+        padding: 1rem;
+    }
+    
+    .form-actions button {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .steam-table {
+        font-size: 0.7rem;
+    }
+    
+    .steam-table th,
+    .steam-table td {
+        padding: 0.3rem 0.5rem;
+    }
+}
+
+/* ===== ANIMASYONLAR ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.steam-row {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* ===== LOADING STATE ===== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+/* ===== VERSION UPDATE ===== */
+/* Updated: 2026-03-13 - Button styles updated */
+
+/* ===== CSS TEST ===== */
+#buhar-page .form-actions button {
+    border: 5px solid red !important; 
+    background: yellow !important; /* Geçici test - sarı arka plan */
+    color: black !important;
+}

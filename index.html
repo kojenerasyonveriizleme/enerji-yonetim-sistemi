@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kojenerasyon Takip ve Bakım Sistemi</title>
+    
+    <!-- 1. ÖNCE: Temel stiller (en düşük öncelik) -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 2. SONRA: Bileşen stilleri -->
+    <link rel="stylesheet" href="css/button-fix.css">
+    <link rel="stylesheet" href="css/dashboard-date-selector.css">
+    <link rel="stylesheet" href="css/hourly-table.css">
+    <link rel="stylesheet" href="css/daily-energy.css">
+    <link rel="stylesheet" href="css/vardiya.css">
+    <link rel="stylesheet" href="css/bakim-takip.css">
+    <link rel="stylesheet" href="css/records.css">
+    
+    <!-- 3. EN SON: Sayfa özel stilleri (en yüksek öncelik) -->
+    <link rel="stylesheet" href="css/kojen-motor.css">
+    <link rel="stylesheet" href="css/kojen-enerji.css">
+    <link rel="stylesheet" href="css/buhar.css?v=20260313-3">
+    
+    <style>
+        /* INLINE CSS TEST - Bu kesinlikle çalışmalı */
+        #buhar-page .form-actions button {
+            border: 5px solid red !important; 
+            background: yellow !important; 
+            color: black !important;
+        }
+    </style>
+    
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+    <!-- Login Container -->
+    <div id="login-container" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <h1>KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ </h1>
+                <p>KOJENERASYON BÖLÜMÜ </p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Kullanıcı Adı</label>
+                    <input type="text" id="username" placeholder="Kullanıcı adınızı girin" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" placeholder="Şifrenizi girin" required>
+                        <button type="button" class="toggle-password" id="toggle-password">
+                            
+                        </button>
+                    </div>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <span>Beni Hatırla</span>
+                    </label>
+                    <a href="#" id="forgot-password" class="forgot-link">Şifremi Unuttum</a>
+                </div>
+                <button type="submit" class="login-btn">Giriş Yap</button>
+            </form>
+            <div class="login-footer">
+                <p>© 2026 Kojenerasyon Takip Sistemi</p>
+            </div>
+        </div>
+        <!-- Şifremi Unuttum Modal -->
+        <div id="forgot-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" id="close-forgot">&times;</span>
+                <h3>Şifre Sıfırlama</h3>
+                <p>Kullanıcı adınızı girin, kayıtlı e-posta adresinize sıfırlama linki gönderilecektir.</p>
+                <div class="form-group">
+                    <input type="text" id="forgot-username" placeholder="Kullanıcı adınızı girin">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="forgot-email" placeholder="E-posta adresinizi girin">
+                </div>
+                <button id="send-reset-btn" class="login-btn">Sıfırlama Linki Gönder</button>
+                <div id="forgot-message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden initially) -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/koruma_logo_1.png" alt="Kojenerasyon Logo" class="logo-img">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Ana Sayfa</span>
+                </a>
+                <a href="#" class="nav-item" data-page="saatlik">
+                    <span class="nav-icon">⚡</span>
+                    <span>Saatlik Aktif ve Reaktif</span>
+                </a>
+                <a href="#" class="nav-item" data-page="gunluk-enerji">
+                    <span class="nav-icon">📊</span>
+                    <span>Günlük Enerji Verileri</span>
+                </a>
+                <a href="#" class="nav-item" data-page="buhar">
+                    <span class="nav-icon">💨</span>
+                    <span>Buhar Verileri</span>
+                </a>
+                <a href="#" class="nav-item" data-page="vardiya">
+                    <span class="nav-icon">🕐</span>
+                    <span>Vardiya Takibi</span>
+                </a>
+                <a href="#" class="nav-item" data-page="kojen-motor">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Kojen Motor Verileri</span>
+                </a>
+                <a href="#" class="nav-item" data-page="kojen-enerji">
+                    <span class="nav-icon">⚡</span>
+                    <span>Kojen Enerji Verileri</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bakim">
+                    <span class="nav-icon">🔧</span>
+                    <span>Bakım Takibi</span>
+                </a>
+                <a href="#" class="nav-item" data-page="ariza">
+                    <span class="nav-icon">🛠️</span>
+                    <span>Arıza Kayıtları</span>
+                </a>
+                <a href="#" class="nav-item" data-page="raporlar">
+                    <span class="nav-icon">📈</span>
+                    <span>Raporlar</span>
+                </a>
+                <a href="kullanici-yonetimi.html" class="nav-item nav-admin-only">
+                    <span class="nav-icon">👥</span>
+                    <span>Kullanıcı Yönetimi</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="logout-btn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page active">
+                <header class="page-header">
+                    <div class="header-left">
+                        <div class="main-logo">
+                            <h1>KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ</h1>
+                            <p>KOJENERASYON BÖLÜMÜ</p>
+                        </div>
+                    </div>
+                    <div class="header-center">
+                        <span id="current-date"></span>
+                    </div>
+                    <div class="header-right">
+                        <span id="user-info"></span>
+                        <button class="refresh-btn" id="refresh-btn" onclick="Dashboard.refreshFromAPI()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
+                    </div>
+                </header>
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <h3>Günlük Üretim</h3>
+                            <p id="daily-energy">-- MWh</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔧</div>
+                        <div class="stat-info">
+                            <h3>Bekleyen Bakım</h3>
+                            <p id="pending-maintenance">--</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🛠️</div>
+                        <div class="stat-info">
+                            <h3>Aktif Arızalar</h3>
+                            <p id="active-faults">--</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <h3>Sistem Durumu</h3>
+                            <p id="system-status">Aktif</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motor Cards Section -->
+                <div class="motor-cards-section" style="margin-top: 30px;">
+                    <h2 style="margin-bottom: 20px; color: var(--text-primary);">Motor Durumları</h2>
+                    <div class="motor-cards-grid">
+                        <!-- GM-1 Card -->
+                        <div class="motor-status-card" id="motor-gm1">
+                            <div class="motor-status-header gm1">
+                                <h3>GM-1</h3>
+                            </div>
+                            <div class="motor-status-body">
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Model:</span>
+                                    <span class="motor-value">JENBACHER J-620</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Kapasite:</span>
+                                    <span class="motor-value">3450 kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm1-total-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm1-total-power">-- MWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm1-daily-power">-- kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm1-daily-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Saatlik Ort. Üretim:</span>
+                                    <span class="motor-value" id="gm1-hourly-avg">-- kWh/saat</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GM-2 Card -->
+                        <div class="motor-status-card" id="motor-gm2">
+                            <div class="motor-status-header gm2">
+                                <h3>GM-2</h3>
+                            </div>
+                            <div class="motor-status-body">
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Model:</span>
+                                    <span class="motor-value">JENBACHER J-620</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Kapasite:</span>
+                                    <span class="motor-value">3450 kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm2-total-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm2-total-power">-- MWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm2-daily-power">-- kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm2-daily-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Saatlik Ort. Üretim:</span>
+                                    <span class="motor-value" id="gm2-hourly-avg">-- kWh/saat</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GM-3 Card -->
+                        <div class="motor-status-card" id="motor-gm3">
+                            <div class="motor-status-header gm3">
+                                <h3>GM-3</h3>
+                            </div>
+                            <div class="motor-status-body">
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Model:</span>
+                                    <span class="motor-value">JENBACHER J-620</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Kapasite:</span>
+                                    <span class="motor-value">3250 kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm3-total-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Toplam Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm3-total-power">-- MWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Üretilen Güç:</span>
+                                    <span class="motor-value" id="gm3-daily-power">-- kWh</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Günlük Çalışma Saati:</span>
+                                    <span class="motor-value" id="gm3-daily-hours">-- saat</span>
+                                </div>
+                                <div class="motor-info-row">
+                                    <span class="motor-label">Saatlik Ort. Üretim:</span>
+                                    <span class="motor-value" id="gm3-hourly-avg">-- kWh/saat</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Saatlik Aktif ve Reaktif Page -->
+            <section id="saatlik-page" class="page">
+                <header class="page-header">
+                    <div class="header-content">
+                        <h1>
+                            KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ
+                            <span>⚙️ KOJENERASYON BÖLÜMÜ</span>
+                            <span>📊 SAATLİK AKTİF VE REAKTİF</span>
+                        </h1>
+                    </div>
+                </header>
+                
+                <div class="content-grid">
+                    <!-- ÜST KONTROLLER -->
+                    <div class="form-section">
+                        <div class="control-panel">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tarih</label>
+                                    <input type="date" id="hourly-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Vardiya</label>
+                                    <select id="hourly-shift" required>
+                                        <option value="gece">Gece Vardiyası (00:00-08:00)</option>
+                                        <option value="gunduz">Gündüz Vardiyası (08:00-16:00)</option>
+                                        <option value="aksam">Akşam Vardiyası (16:00-24:00)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Vardiya formunun başına ekleyin -->
+<div id="vardiya-duplicate-warning" class="duplicate-warning" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- VARDİYA TABLOSU -->
+                    <div class="table-section">
+                        <div class="table-header">
+                            <h3 id="shift-title">Gece Vardiyası Verileri</h3>
+                            <div class="table-actions">
+                                <span class="shift-time" id="shift-time">00:00 - 08:00</span>
+                                <span class="record-count" id="record-count">0/8 kayıt</span>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="data-table" id="hourly-table">
+                                <thead>
+                                    <tr>
+                                        <th width="15%">Saat</th>
+                                        <th width="25%">Aktif Enerji (MWh)</th>
+                                        <th width="25%">Reaktif Enerji (kVArh)</th>
+                                        <th width="15%">Durum</th>
+                                        <th width="20%">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hourly-table-body">
+                                    <!-- JavaScript ile doldurulacak -->
+                                    <tr class="empty-row">
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <span class="empty-icon">📊</span>
+                                                <p>Vardiya yüklemek için "Vardiyayı Yükle" butonuna tıklayın</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- TOPLAMLAR -->
+                        <div class="summary-panel">
+                            <div class="summary-item">
+                                <span class="summary-label">Vardiya Aktif Toplam:</span>
+                                <span class="summary-value" id="shift-aktif-total">0.000 MWh</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Vardiya Reaktif Toplam:</span>
+                                <span class="summary-value" id="shift-reaktif-total">0.000 kVArh</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Günlük Aktif Toplam:</span>
+                                <span class="summary-value" id="daily-aktif-total">0.000 MWh</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+            </section>
+
+            <!-- Günlük Enerji Verileri Page -->
+            <section id="gunluk-enerji-page" class="page">
+                <header class="page-header">
+                    <div class="header-content">
+                        <h1>
+                            <span class="main-title">🏭 KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ</span>
+                            <span>⚙️ KOJENERASYON BÖLÜMÜ</span>
+                            <span>📊 GÜNLÜK ENERJİ VERİLERİ</span>
+                        </h1>
+                    </div>
+                </header>
+                
+                <div class="hourly-energy-container">
+                    
+                    <!-- Input Card -->
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3>📈 Günlük Üretim ve Tüketim</h3>
+                            <span class="status-badge" id="daily-status">Bekliyor</span>
+                        </div>
+                        
+                        <form id="daily-energy-form">
+                            <!-- Yağ Seviyesi -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🛢️</span>
+                                    Yağ Seviyesi
+                                    <span class="unit-badge">L</span>
+                                </label>
+                                <input type="number" id="yag-seviyesi" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- Kuplaj -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">⚙️</span>
+                                    Kuplaj
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="kuplaj" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- GM-1 -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🔵</span>
+                                    GM-1
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="gm-1" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- GM-2 -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🟢</span>
+                                    GM-2
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="gm-2" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- GM-3 -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🟡</span>
+                                    GM-3
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="gm-3" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- İç İhtiyaç -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🏠</span>
+                                    İç İhtiyaç
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="ic-ihtiyac" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- 1. Redresör -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🔴</span>
+                                    1. Redresör
+                                    <span class="unit-badge">MW</span>
+                                    <small class="input-note">116-117</small>
+                                </label>
+                                <input type="number" id="redresor-1" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- 2. Redresör -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🔴</span>
+                                    2. Redresör
+                                    <span class="unit-badge">MW</span>
+                                    <small class="input-note">119-121</small>
+                                </label>
+                                <input type="number" id="redresor-2" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- Kojen İç İhtiyaç -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">⚡</span>
+                                    Kojen İç İhtiyaç
+                                    <span class="unit-badge">kW</span>
+                                </label>
+                                <input type="number" id="kojen-ic-ihtiyac" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- Servis Trafosu -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="input-icon">🔌</span>
+                                    Servis Trafosu
+                                    <span class="unit-badge">MW</span>
+                                </label>
+                                <input type="number" id="servis-trafosi" class="modern-input" min="0" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="input-actions">
+                                <button type="button" class="action-btn save-btn" id="save-daily-btn">
+                                    <span class="btn-icon">💾</span>
+                                    Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Google Sheets Kayıtları Tablosu -->
+                <div class="records-section" style="margin-top: 30px;">
+                    <div class="section-header">
+                        <h2>📋 Google Sheets Kayıtları</h2>
+                        <p>Tüm günlük enerji kayıtlarınızı görüntüleyin</p>
+                    </div>
+
+                    <!-- Kayıt Yükleme Butonu -->
+                    <div class="records-controls">
+                        <button id="load-records-btn" class="btn-primary">
+                            <span>🔄</span>
+                            Kayıtları Yükle
+                        </button>
+                        
+                        <!-- Satır Sayısı Seçimi -->
+                        <div class="row-selector">
+                            <label for="row-count">Satır Sayısı:</label>
+                            <select id="row-count">
+                                <option value="10">10</option>
+                                <option value="20" selected>20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                        
+                        <div class="records-info">
+                            <span id="total-records">Toplam: 0 kayıt</span>
+                        </div>
+                    </div>
+
+                    <!-- Tablo -->
+                    <div class="table-container">
+                        <table id="records-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Yağ Seviyesi (L)</th>
+                                    <th>Kuplaj</th>
+                                    <th>GM-1</th>
+                                    <th>GM-2</th>
+                                    <th>GM-3</th>
+                                    <th>İç İhtiyaç</th>
+                                    <th>Redresör 1</th>
+                                    <th>Redresör 2</th>
+                                    <th>Kojen İç İhtiyaç</th>
+                                    <th>Servis Trafo</th>
+                                    <th>Kaydeden</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th>Düzenleyen</th>
+                                    <th>Düzenleme Tarihi</th>
+                                    <th>Düzenlenen Değerler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-tbody">
+                                <tr>
+                                    <td colspan="17" class="no-data">Kayıt yüklemek için "Kayıtları Yükle" butonuna tıklayın</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Sayfalama -->
+                    <div class="pagination-container">
+                        <div class="pagination" id="pagination">
+                            <!-- Sayfalama butonları JS ile oluşturulacak -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <!-- Vardiya Takibi Page -->
+            <section id="vardiya-page" class="page">
+                <div class="page-header">
+                    <div class="header-left">
+                        <div class="main-logo">
+                            <h1>⏰ Vardiya Takibi</h1>
+                            <p>Vardiya kayıtlarınızı güvenle saklayın</p>
+                        </div>
+                    </div>
+                    <div class="header-center">
+                        <div class="current-status">
+                            <span class="status-badge active" id="current-vardiya-status">
+                                ● Aktif Vardiya: <span id="current-shift-name">Yükleniyor...</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div class="header-actions">
+                            <div id="user-info">Kullanıcı: <span id="username">Admin</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <!-- Sol Panel - Vardiya Formu -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h3>📋 Yeni Vardiya Kaydı</h3>
+                            <p class="section-subtitle">Tüm alanları doldurarak vardiya kaydınızı oluşturun</p>
+                        </div>
+                        
+                        <form id="vardiya-form" class="vardiya-form" novalidate>
+                            <!-- Otomatik Tarih ve Vardiya -->
+                            <div class="form-group auto-fill-section">
+                                <div class="auto-fill-row">
+                                    <div class="auto-fill-item">
+                                        <label class="auto-fill-label">
+                                            📅 Otomatik Tarih
+                                        </label>
+                                        <div class="auto-fill-value" id="auto-date">
+                                            <input type="date" id="vardiya-tarih" class="auto-filled-input" readonly>
+                                            <button type="button" class="btn-change-date" id="change-date-btn">
+                                                ✏️ Değiştir
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="auto-fill-item">
+                                        <label class="auto-fill-label">
+                                            🕐 Vardiya
+                                        </label>
+                                        <div class="auto-fill-value" id="auto-shift">
+                                            <select id="vardiya-tipi" class="auto-filled-select">
+                                                <option value="gece">Gece (00:00 - 08:00)</option>
+                                                <option value="gunduz">Gündüz (08:00 - 16:00)</option>
+                                                <option value="aksam">Akşam (16:00 - 24:00)</option>
+                                            </select>
+                                            <div class="shift-info">
+                                                <span class="shift-time" id="shift-hours">00:00 - 08:00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Yardımcı Vardıya Seçimi (Sadece Gündüz) -->
+                            <div class="form-group yardimci-section" id="yardimci-section">
+                                <label class="form-label">
+                                    👥 Yardımcı Vardıya
+                                    <span class="label-note">(Sadece Gündüz vardiyası için)</span>
+                                </label>
+                                <div class="yardimci-options">
+                                    <label class="radio-option">
+                                        <input type="radio" name="yardimci" value="var" id="yardimci-var">
+                                        <span class="radio-checkmark"></span>
+                                        <span class="radio-label">
+                                            ✅ Var
+                                            <small class="option-desc">Ek vardıya personeli mevcut</small>
+                                        </span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="yardimci" value="yok" id="yardimci-yok" checked>
+                                        <span class="radio-checkmark"></span>
+                                        <span class="radio-label">
+                                            ❌ Yok
+                                            <small class="option-desc">Sadece bir personel</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="yardimci-personel-group" id="yardimci-personel-group" style="display: none;">
+                                    <label class="form-label">
+                                        👤 Yardımcı Personel
+                                    </label>
+                                    <select id="yardimci-personel" name="yardimci-personel" class="form-select">
+                                        <option value="">Yardımcı personel seçiniz...</option>
+                                        <!-- Operatörler JavaScript ile doldurulacak -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Vardiya Personeli -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    👔 Vardiya Personeli
+                                </label>
+                                <select id="vardiya-personeli" name="vardiya-personeli" class="form-select" required>
+                                    <option value="">Personel seçiniz...</option>
+                                    <!-- Operatörler JavaScript ile doldurulacak -->
+                                </select>
+                            </div>
+
+                            <!-- Vardıyada Yapılan İşler -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    📝 Vardıyada Yapılan İşler
+                                </label>
+                                <div class="isler-checklist">
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="is-normal">
+                                        <label for="is-normal" class="checklist-label">
+                                            ✅ <span class="checklist-text">Vardıyada herhangi bir sorun yaşanmamıştır</span>
+                                        </label>
+                                    </div>
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="is-bakim">
+                                        <label for="is-bakim" class="checklist-label">
+                                            🔧 <span class="checklist-text">Rutin bakım yapıldı</span>
+                                        </label>
+                                    </div>
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="is-ariza">
+                                        <label for="is-ariza" class="checklist-label">
+                                            ⚠️ <span class="checklist-text">Arıza tespit edildi</span>
+                                        </label>
+                                    </div>
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="is-temizlik">
+                                        <label for="is-temizlik" class="checklist-label">
+                                            🧹 <span class="checklist-text">Temizlik yapıldı</span>
+                                        </label>
+                                    </div>
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="is-diger">
+                                        <label for="is-diger" class="checklist-label">
+                                            ⋯ <span class="checklist-text">Diğer işlemler</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ek Notlar -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    📋 Ek Notlar ve Uyarılar
+                                </label>
+                                <div class="notes-container">
+                                    <textarea id="vardiya-notlar" 
+                                              class="notes-textarea"
+                                              placeholder="Vardıyada yaşanan önemli durumları, uyarıları veya ek bilgileri buraya yazın..."
+                                              rows="4"></textarea>
+                                    <div class="notes-footer">
+                                        <div class="char-count">
+                                            <span id="char-counter">0</span>/500 karakter
+                                        </div>
+                                        <button type="button" class="btn-add-template" id="add-template-btn">
+                                            ➕ Şablon Ekle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Uyarı Mesajı -->
+                            <div class="warning-box" id="warning-box">
+                                <div class="warning-header">
+                                    ⚠️ <h4>Önemli Uyarı</h4>
+                                </div>
+                                <p class="warning-text">
+                                    Lütfen vardıya sonunda tüm işlemlerin doğru şekilde kaydedildiğinden emin olun. 
+                                    Eksik veya hatalı kayıtlar sistem güvenliğini etkileyebilir.
+                                </p>
+                            </div>
+
+                            <!-- Kaydet Butonu -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary vardiya-save-btn" id="save-vardiya-btn">
+                                    💾 <span class="btn-text">Vardiyayı Kaydet</span>
+                                    <span class="btn-loading" id="save-loading">
+                                        🔄 Kaydediliyor...
+                                    </span>
+                                </button>
+                                <button type="button" class="btn-secondary" id="reset-form-btn">
+                                    🔄 Formu Temizle
+                                </button>
+</section>
+
+            <!-- Kojen Motor Verileri Page -->
+            <section id="kojen-motor-page" class="page">
+                <header class="page-header kojen-motor-header">
+                    <div class="header-content">
+                        <div class="header-left">
+                            <div class="page-title">
+                                <h1>⚙️ Kojen Motor Verileri</h1>
+                                <div class="motor-selection">
+                                    <label>Motor:</label>
+                                    <div class="motor-buttons">
+                                        <button type="button" class="motor-btn active" data-motor="motor-1">GM-1</button>
+                                        <button type="button" class="motor-btn" data-motor="motor-2">GM-2</button>
+                                        <button type="button" class="motor-btn" data-motor="motor-3">GM-3</button>
+                                    </div>
+                                </div>
+                                <div class="vardiya-info">
+                                    <div class="vardiya-badge" id="active-vardiya">
+                                        🕐 Vardiya Yükleniyor...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-center">
+                            <div class="date-input-group">
+                                <label for="kojen-motor-date">Tarih:</label>
+                                <input type="date" id="kojen-motor-date" name="kojen-motor-date" required>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                        </div>
+                    </div>
+                </header>
+                <div class="content-grid">
+                    <div class="form-section">
+                        <div class="kojen-table-container">
+                            <div class="kojen-table-header">
+                                <div class="kojen-table-row">
+                                    <div class="kojen-table-cell header-cell sticky-col current-hour">SAAT</div>
+                                    <div class="kojen-table-cell header-cell">JEN. YATAK SICAKLIĞI (DE)</div>
+                                    <div class="kojen-table-cell header-cell">JEN. YATAK SICAKLIĞI (NDE)</div>
+                                    <div class="kojen-table-cell header-cell">SOĞUTMA SUYU SICAKLIĞI</div>
+                                    <div class="kojen-table-cell header-cell">SOĞUTMA SUYU BASINCI</div>
+                                    <div class="kojen-table-cell header-cell">YAĞ SICAKLIĞI</div>
+                                    <div class="kojen-table-cell header-cell">YAĞ BASINCI</div>
+                                    <div class="kojen-table-cell header-cell">ŞARJ SICAKLIĞI</div>
+                                    <div class="kojen-table-cell header-cell">ŞARJ BASINCI</div>
+                                    <div class="kojen-table-cell header-cell">GAZ REGÜLATÖRÜ λ</div>
+                                    <div class="kojen-table-cell header-cell">MAKİNE DAİRESİ SICAKLIĞI</div>
+                                    <div class="kojen-table-cell header-cell">KARTER BASINCI</div>
+                                    <div class="kojen-table-cell header-cell">ÖN KAMARA FARK BASINCI</div>
+                                    <div class="kojen-table-cell header-cell">SARGI SICAKLIĞI -1-</div>
+                                    <div class="kojen-table-cell header-cell">SARGI SICAKLIĞI -2-</div>
+                                    <div class="kojen-table-cell header-cell">SARGI SICAKLIĞI -3-</div>
+                                </div>
+                            </div>
+                            <div class="kojen-table-body" id="kojen-table-body">
+                                <!-- JavaScript tarafından doldurulacak -->
+                            </div>
+                        </div>
+                        
+                        <!-- Kaydet ve Temizle Butonları -->
+                        <div class="kojen-actions">
+                            <button id="save-kojen-btn" class="btn-primary">💾 Kaydet</button>
+                            <button id="clear-kojen-btn" class="btn-secondary">🔄 Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kojen Enerji Verileri Page -->
+            <section id="kojen-enerji-page" class="page">
+                <header class="page-header kojen-motor-header">
+                    <div class="header-content">
+                        <div class="header-left">
+                            <div class="page-title">
+                                <h1>⚡ Kojen Enerji Verileri</h1>
+                                <div class="motor-selection">
+                                    <label>Motor:</label>
+                                    <div class="motor-buttons">
+                                        <button type="button" class="motor-btn active" data-motor="motor-1">GM-1</button>
+                                        <button type="button" class="motor-btn" data-motor="motor-2">GM-2</button>
+                                        <button type="button" class="motor-btn" data-motor="motor-3">GM-3</button>
+                                    </div>
+                                </div>
+                                <div class="vardiya-info">
+                                    <div class="vardiya-badge" id="active-enerji-vardiya">
+                                        🕐 Vardiya Yükleniyor...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-center">
+                            <div class="date-input-group">
+                                <label for="kojen-enerji-date">Tarih:</label>
+                                <input type="date" id="kojen-enerji-date" name="kojen-enerji-date" required>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                        </div>
+                    </div>
+                </header>
+                <div class="content-grid">
+                    <div class="form-section">
+                        <div class="kojen-enerji-table-container">
+                            <div class="kojen-enerji-table-header">
+                                <div class="kojen-enerji-table-row">
+                                    <div class="kojen-enerji-table-cell header-cell sticky-col">SAAT</div>
+                                    <div class="kojen-enerji-table-cell header-cell">L1-L2 AYDEM VOLTAJI</div>
+                                    <div class="kojen-enerji-table-cell header-cell">(P) AKTİF GÜÇ</div>
+                                    <div class="kojen-enerji-table-cell header-cell">(Q) REAKTİF GÜÇ</div>
+                                    <div class="kojen-enerji-table-cell header-cell">Cos φ</div>
+                                    <div class="kojen-enerji-table-cell header-cell">ORT.AKIM</div>
+                                    <div class="kojen-enerji-table-cell header-cell">ORT.GERİLİM</div>
+                                    <div class="kojen-enerji-table-cell header-cell">NÖTR AKIMI (LN)</div>
+                                    <div class="kojen-enerji-table-cell header-cell">TAHRİK GERİLİMİ (UE)</div>
+                                    <div class="kojen-enerji-table-cell header-cell">TOPLAM AKTİF ENERJİ</div>
+                                    <div class="kojen-enerji-table-cell header-cell">ÇALIŞMA SAATİ</div>
+                                    <div class="kojen-enerji-table-cell header-cell">KALKIŞ SAYISI</div>
+                                </div>
+                            </div>
+                            <div class="kojen-enerji-table-body" id="kojen-enerji-table-body">
+                                <!-- JavaScript tarafından doldurulacak -->
+                            </div>
+                        </div>
+                        
+                        <!-- Kaydet ve Temizle Butonları -->
+                        <div class="kojen-actions">
+                            <button id="save-kojen-enerji-btn" class="btn-primary">💾 Kaydet</button>
+                            <button id="clear-kojen-enerji-btn" class="btn-secondary">🔄 Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bakım Takibi Page -->
+            <section id="bakim-page" class="page">
+                <header class="page-header">
+                    <h1>🔧 Bakım Takibi</h1>
+                    <div class="header-actions">
+                        <div class="admin-badge">
+                            <span class="admin-icon">👤</span>
+                            <span>Admin Girişi</span>
+                        </div>
+                    </div>
+                </header>
+                <div class="content-grid">
+                    <div class="maintenance-cards">
+                        <!-- Periyodik Bakım Kartı -->
+                        <div class="maintenance-card periodik-card">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <span class="icon-rotate">🔄</span>
+                                </div>
+                                <h2>Periyodik Bakım</h2>
+                                <div class="card-badge">Otomatik</div>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-description">
+                                    Planlı periyodik bakımları yönetin. Motorların düzenli bakım takvimini oluşturun ve takip edin.
+                                </p>
+                                <div class="card-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="periodik-count">0</span>
+                                        <span class="stat-label">Planlı Bakım</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="periodik-completed">0</span>
+                                        <span class="stat-label">Tamamlanan</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn-maintenance btn-periodik" onclick="BakimTakibi.openPeriodik()">
+                                    <span class="btn-icon">📅</span>
+                                    <span>Yönet</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Normal Bakım Kartı -->
+                        <div class="maintenance-card normal-card">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <span class="icon-wrench">🔧</span>
+                                </div>
+                                <h2>Normal Bakım</h2>
+                                <div class="card-badge">Manuel</div>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-description">
+                                    Gerekli olan normal bakım işlemlerini kaydedin ve takip edin. Motor durumu ve bakım geçmişi.
+                                </p>
+                                <div class="card-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="normal-count">0</span>
+                                        <span class="stat-label">Aktif Bakım</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="normal-pending">0</span>
+                                        <span class="stat-label">Bekleyen</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn-maintenance btn-normal" onclick="BakimTakibi.openNormal()">
+                                    <span class="btn-icon">🔧</span>
+                                    <span>Yönet</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Arıza Bakım Kartı -->
+                        <div class="maintenance-card ariza-card">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <span class="icon-warning">⚠️</span>
+                                </div>
+                                <h2>Arıza Bakım</h2>
+                                <div class="card-badge badge-urgent">Acil</div>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-description">
+                                    Acil arıza durumlarını kaydedin ve çözüm süreçlerini takip edin. Arıza analizi ve raporlama.
+                                </p>
+                                <div class="card-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="ariza-count">0</span>
+                                        <span class="stat-label">Aktif Arıza</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number" id="ariza-resolved">0</span>
+                                        <span class="stat-label">Çözülen</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn-maintenance btn-ariza" onclick="BakimTakibi.openAriza()">
+                                    <span class="btn-icon">🚨</span>
+                                    <span>Yönet</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Yetki Kontrolü -->
+                    <div class="admin-check" id="admin-check" style="display: none;">
+                        <div class="admin-lock">
+                            <span class="lock-icon">🔒</span>
+                            <h3>Yetki Gerekiyor</h3>
+                            <p>Bu sayfaya sadece admin seviyesindeki kullanıcılar erişebilir.</p>
+                            <button class="btn-admin-login" onclick="BakimTakibi.checkAdmin()">
+                                <span class="btn-icon">🔑</span>
+                                <span>Admin Girişi</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Arıza Kayıtları Page -->
+            <section id="ariza-page" class="page">
+                <header class="page-header">
+                    <h1>Arıza Kayıtları İzleme</h1>
+                    <div class="header-actions">
+                        <button id="export-excel-btn" class="btn-secondary" onclick="ArizaRaporlama.exportExcel()">
+                            <span class="btn-icon">📊</span>
+                            <span>Excel'e Aktar</span>
+                        </button>
+                        <button id="export-pdf-btn" class="btn-secondary" onclick="ArizaRaporlama.exportPDF()">
+                            <span class="btn-icon">📄</span>
+                            <span>PDF'e Aktar</span>
+                        </button>
+                    </div>
+                </header>
+                <div class="content-grid">
+                    <div class="form-section">
+                        <h3>Arıza Kayıt Çekme Formu</h3>
+                        <form id="ariza-form" novalidate>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Başlangıç Tarihi</label>
+                                    <input type="date" id="ariza-baslangic-tarih" name="ariza-baslangic-tarih" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Bitiş Tarihi</label>
+                                    <input type="date" id="ariza-bitis-tarih" name="ariza-bitis-tarih" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Motor</label>
+                                    <select id="ariza-motor" name="ariza-motor" required>
+                                        <option value="">Seçiniz</option>
+                                        <option value="GM1">GM1 - JENBACH 1</option>
+                                        <option value="GM2">GM2 - JENBACH 2</option>
+                                        <option value="GM3">GM3 - JENBACH 3</option>
+                                        <option value="hepsi">Tüm Motorlar</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Arıza Türü</label>
+                                    <select id="ariza-turu" name="ariza-turu" required>
+                                        <option value="">Tümü</option>
+                                        <option value="periyodik">Periyodik Bakım Arızası</option>
+                                        <option value="normal">Normal Bakım Arızası</option>
+                                        <option value="ariza">Arıza</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Öncelik</label>
+                                    <select id="ariza-oncelik" name="ariza-oncelik" required>
+                                        <option value="">Tümü</option>
+                                        <option value="dusuk">Düşük</option>
+                                        <option value="orta">Orta</option>
+                                        <option value="yuksek">Yüksek</option>
+                                        <option value="acil">Acil</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Durum</label>
+                                    <select id="ariza-durum" name="ariza-durum" required>
+                                        <option value="">Tümü</option>
+                                        <option value="aktif">Aktif</option>
+                                        <option value="cozuldu">Çözüldü</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary">Kayıtları Getir</button>
+                        </form>
+                    </div>
+                    <div class="list-section">
+                        <div class="section-header">
+                            <h3>Arıza Kayıtları</h3>
+                            <div class="header-actions">
+                                <div class="record-count">
+                                    <span id="ariza-count">0</span> kayıt bulundu
+                                </div>
+                                <button id="clear-filters-btn" class="btn-small" onclick="ArizaRaporlama.clearFilters()">
+                                    <span>Filtreleri Temizle</span>
+                                    <span>PDF'e Aktar</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="ariza-list" class="data-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Raporlar Page -->
+            <section id="raporlar-page" class="page">
+                <header class="page-header">
+                    <h1>Raporlar</h1>
+                    <div class="header-actions">
+                        <input type="month" id="report-month">
+                        <button id="generate-report-btn" class="btn-primary">Kaydet</button>
+                    </div>
+                </header>
+                <div class="content-grid">
+                    <div id="report-container" class="report-container">
+                        <p>Rapor oluşturmak için tarih seçin ve "Rapor Oluştur" butonuna tıklayın.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Buhar Verileri Page -->
+            <section id="buhar-page" class="page">
+                <header class="page-header">
+                    <h1>💨 Buhar Verileri</h1>
+                </header>
+                <div class="content-grid">
+                    <div class="form-section">
+                        <div class="steam-form-container">
+                            <div class="form-header">
+                                <h3>Buhar Veri Girişi</h3>
+                                <div class="date-time-info">
+                                    <span id="current-datetime"></span>
+                                </div>
+                            </div>
+                            <form id="steam-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="steam-date">Tarih</label>
+                                        <input type="date" id="steam-date" name="steam-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="steam-time">Saat</label>
+                                        <input type="time" id="steam-time" name="steam-time" min="00:00" max="23:59" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="steam-amount">Buhar Miktarı (ton)</label>
+                                        <input type="number" id="steam-amount" name="steam-amount" step="0.1" min="0" placeholder="0.0" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="steam-notes">Notlar</label>
+                                        <textarea id="steam-notes" name="steam-notes" rows="3" placeholder="Eklemek istediğiniz notları buraya yazın..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary btn-full-width">
+                                        <span>💾</span>
+                                        <span>Veriyi Kaydet</span>
+                                    </button>
+                                    <button type="button" id="reset-steam-form" class="btn-secondary btn-full-width">
+                                        <span>🔄</span>
+                                        <span>Formu Temizle</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="google-sheets-data-section">
+                        <div class="section-header">
+                            <h3>Google Sheets Verileri</h3>
+                            <div class="header-actions">
+                                <div class="record-count">
+                                    <span id="google-sheets-count">0</span> kayıt bulundu
+                                </div>
+                                <button id="refresh-google-sheets-btn" class="btn-small">
+                                    <span>🔄</span>
+                                    <span>Yenile</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="google-sheets-table-container">
+                            <table class="google-sheets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Kayıt Zamanı</th>
+                                        <th>Buhar Üretimi (ton)</th>
+                                        <th>Notlar</th>
+                                        <th>Kaydeden</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="google-sheets-table-body">
+                                    <!-- JavaScript tarafından doldurulacak -->
+                                </tbody>
+                            </table>
+                            <div id="no-google-sheets-data" class="no-data-message" style="display: none;">
+                                <p>📊 Google Sheets'ten henüz veri bulunmuyor.</p>
+                                <p>Yukarıdaki formu kullanarak veri kaydedebilirsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ayarlar Page -->
+            <section id="ayarlar-page" class="page">
+                <header class="page-header">
+                    <h1>Ayarlar</h1>
+                </header>
+            </section>
+        </main>
+    </div>
+
+    <!-- Message Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Scripts -->
+    <script src="js/libs/jspdf.umd.min.js"></script>
+    <script src="js/libs/xlsx.full.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/daily-energy-api.js"></script>
+    <script src="js/daily-energy.js"></script>
+    <script src="js/enerji.js"></script>
+    <script src="js/vardiya.js"></script>
+    <script src="js/kojen-motor.js"></script>
+    <script src="js/kojen-enerji.js"></script>
+    <script src="js/bakim-takip.js"></script>
+    <script src="js/bakim.js"></script>
+    <script src="js/ariza.js"></script>
+    <script src="js/ariza-raporlama.js"></script>
+    <script src="js/google-sheets-api.js"></script>
+    <script src="js/user-api.js"></script>
+    <script src="js/buhar.js"></script>
+    <script src="js/raporlar.js"></script>
+    <script src="js/records.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+    (() => {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const saved = localStorage.getItem('theme');
+
+        document.documentElement.dataset.theme =
+            saved || (prefersDark ? 'dark' : 'light');
+    })();
+    </script>
+</body>
+</html>
