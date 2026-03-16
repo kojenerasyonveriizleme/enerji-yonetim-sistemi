@@ -692,9 +692,11 @@ const BuharVerileri = {
         this.debugLog(`Toplam veriler: ${this.googleSheetsData.length}`);
         
         // Bugün için kayıt var mı kontrol et (sadece bilgi amaçlı)
+        this.debugLog('Bugün için kayıt kontrolü başlıyor...');
         const todayRecords = this.googleSheetsData.filter(record => {
             const recordDate = this.normalizeDate(record.date);
             const isToday = recordDate === todayString;
+            this.debugLog(`Kayıt kontrolü: ${record.date} -> ${recordDate} vs ${todayString} = ${isToday}`);
             return isToday;
         });
         
@@ -786,16 +788,37 @@ const BuharVerileri = {
             
             // Google Sheets'ten bu tarih için kayıt kontrolü yap
             if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
+                // Tarihi DD/MM/YYYY formatına çevir
+                const formattedDate = this.processDateTime(selectedDate, null, { outputFormat: 'DD/MM/YYYY' });
+                this.debugLog('Kayıt kontrolü için tarih formatı:', `${selectedDate} -> ${formattedDate}`);
+                
                 const result = await GoogleSheetsAPI.getData('buhar', { 
-                    date: selectedDate
+                    date: formattedDate
                 });
                 
                 this.debugLog('Kayıt kontrolü sonucu:', result);
+                this.debugLog('İstenen tarih:', formattedDate);
+                this.debugLog('Gelen kayıtlar:', result.data);
                 
                 if (result.success && result.data && result.data.length > 0) {
-                    // Kayıt varsa input'ları kilitle
-                    this.disableFormInputs(true);
-                    Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
+                    // Gelen kayıtların tarihlerini kontrol et
+                    const matchingRecords = result.data.filter(record => {
+                        const recordDate = this.normalizeDate(record.date);
+                        const isMatch = recordDate === selectedDate;
+                        this.debugLog(`Kayıt eşleşme kontrolü: ${record.date} -> ${recordDate} vs ${selectedDate} = ${isMatch}`);
+                        return isMatch;
+                    });
+                    
+                    this.debugLog(`Eşleşen kayıt sayısı: ${matchingRecords.length}`);
+                    
+                    if (matchingRecords.length > 0) {
+                        // Kayıt varsa input'ları kilitle
+                        this.disableFormInputs(true);
+                        Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
+                    } else {
+                        // Kayıt yoksa input'ları aç
+                        this.disableFormInputs(false);
+                    }
                 } else {
                     // Kayıt yoksa input'ları aç
                     this.disableFormInputs(false);
