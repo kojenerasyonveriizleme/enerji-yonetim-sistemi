@@ -125,7 +125,7 @@ const CONFIG = {
         unified: 'https://script.google.com/macros/s/AKfycbzsu_AsckzffzmoLQ1UaSW8XQxEF2t8zzgkykP9g11Jh7hldFXcUAzgKDNvPYacbzw/exec', // En yeni deploy edilen unified URL
         buhar: 'https://script.google.com/macros/s/AKfycbyTuu7MEU2cvbyZ4RHurqNVU9x2-3-uyOXLoqXs01Y2JSTmSfliJwVP51NSoRMerikI/exec',
         saatlik: 'https://script.google.com/macros/s/AKfycbwf_e62Ky3zU4EmTMg25dMY6UgzGGg3JK1k7U6K_CYJvuVkRATh62-U7ouJHgJt1HYO/exec',
-        vardiya: 'https://script.google.com/macros/s/AKfycbwOvfOlpWoVBmw82MVfLjx5rO9NCFF6qhmfrorHXtltGhORPXv1z0BKTGtP95Xp9Jfb/exec',
+        vardiya: 'https://script.google.com/macros/s/AKfycbyRanD1xaYrYQJN3At39LtCuX8iG0W9nWHpXaZa-T04olmOAQTMNTIxiOFjoucNaZZs/exec',
         gunluk_enerji: 'https://script.google.com/macros/s/AKfycbySueMR25G2FxZPe2ZC_IArdvROg77yzELFRHHM7jnMaa-luT1i2_XaqMAt67Vy0lIe/exec',
         kullanici: 'https://script.google.com/macros/s/AKfycbwEPH0D2wkRVd9y483SQnaya4n3mr9dnYNlObREze-GPSjTO-fCxlZtkWDwrKkdTB7t/exec',
         gunluk_enerji_yeni: 'https://script.google.com/macros/s/AKfycbw-3C6Ulj7ou_rJ6rgmrKsalKRtE70xEUbKA8cH89JSmQAOmRPi6JAMxhSNsFpGNxUT/exec',

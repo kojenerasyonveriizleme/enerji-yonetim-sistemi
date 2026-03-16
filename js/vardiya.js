@@ -27,12 +27,12 @@ const Vardiya = {
     setAutoDate: function() {
         const tarihInput = document.getElementById('vardiya-tarih');
         if (tarihInput) {
-            // Bugünün tarihini YYYY-MM-DD formatında ayarla
+            // Bugünün tarihini DD.MM.YYYY formatında ayarla
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
+            const formattedDate = `${day}.${month}.${year}`; // Türkçe format
             
             console.log('📅 Otomatik tarih ayarlanıyor:', formattedDate); // Debug
             tarihInput.value = formattedDate;
@@ -373,8 +373,8 @@ const Vardiya = {
         // Kullanıcının girdiği tarihi kullan (değiştirse bile)
         const finalTarih = tarihInput.value.trim();
         
-        // Tarihi ISO formatına çevir (API için)
-        const tarihForAPI = this.convertToISOFormat(finalTarih);
+        // Tarihi doğrudan kullan (Türkçe format olarak gönderilecek)
+        const tarihForAPI = finalTarih;
         
         if (!finalTarih) {
             Utils.showToast('Lütfen tarih seçin', 'error');

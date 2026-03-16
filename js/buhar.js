@@ -121,14 +121,12 @@ const BuharVerileri = {
         const submitBtn = document.getElementById('steam-form-submit');
         const resetBtn = document.getElementById('reset-steam-form');
         const dateInput = document.getElementById('steam-date');
-        const timeInput = document.getElementById('steam-time');
         
         this.debugLog('Form elementleri:', {
             form: !!form,
             submitBtn: !!submitBtn,
             resetBtn: !!resetBtn,
-            dateInput: !!dateInput,
-            timeInput: !!timeInput
+            dateInput: !!dateInput
         });
         
         if (!form) {
@@ -186,16 +184,11 @@ const BuharVerileri = {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const time = `${hours}:${minutes}`;
         
-        // Tarih ve saat input'larını doldur
+        // Tarih input'unu doldur
         const dateInput = document.getElementById('steam-date');
-        const timeInput = document.getElementById('steam-time');
         
         if (dateInput) {
             dateInput.value = date;
-        }
-        
-        if (timeInput) {
-            timeInput.value = time;
         }
     },
     
@@ -349,17 +342,43 @@ const BuharVerileri = {
             
             // 🔥 GOOGLE SHEETS KONTROLÜ - Aynı tarihte kayıt var mı?
             if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
+                // Seçilen tarihi bir gün geriye al (kaydedilecek tarih)
+                const selectedDateObj = new Date(steamDate);
+                const recordDateObj = new Date(selectedDateObj);
+                recordDateObj.setDate(recordDateObj.getDate() - 1);
+                
+                const year = recordDateObj.getFullYear();
+                const month = String(recordDateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(recordDateObj.getDate()).padStart(2, '0');
+                const recordDate = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
+                
+                // Kontrol için DD/MM/YYYY formatına çevir (API için)
+                const apiFormattedDate = this.processDateTime(recordDate, null, { outputFormat: 'DD/MM/YYYY' });
+                this.debugLog('Submit kontrolü:', `${steamDate} -> ${recordDate} (kayıt) -> ${apiFormattedDate} (API)`);
+                
                 const existingRecordsResult = await GoogleSheetsAPI.getData('buhar', { 
-                    date: steamDate
+                    date: apiFormattedDate
                 });
                 
                 this.debugLog('Google Sheets kayıt kontrolü:', existingRecordsResult);
                 
                 if (existingRecordsResult.success && existingRecordsResult.data && existingRecordsResult.data.length > 0) {
-                    Utils.showToast(`❌ ${steamDate} tarihi için Google Sheets'te zaten kayıt mevcut!`, 'error');
-                    // Formu kilitle
-                    this.disableFormInputs(true);
-                    return;
+                    // Gelen kayıtları client-side filtrele
+                    const matchingRecords = existingRecordsResult.data.filter(record => {
+                        const recordDateFromSheet = this.normalizeDate(record.Tarih);
+                        const isMatch = recordDateFromSheet === recordDate; // kontrol edilen tarih ile karşılaştır
+                        this.debugLog(`Submit filtre kontrolü: ${record.Tarih} -> ${recordDateFromSheet} vs ${recordDate} = ${isMatch}`);
+                        return isMatch;
+                    });
+                    
+                    this.debugLog(`Submit eşleşen kayıt sayısı: ${matchingRecords.length}`);
+                    
+                    if (matchingRecords.length > 0) {
+                        Utils.showToast(`❌ ${steamDate} tarihi için zaten kayıt mevcut (${recordDate} olarak kaydedilmiş)!`, 'error');
+                        // Formu kilitle
+                        this.disableFormInputs(true);
+                        return;
+                    }
                 }
             }
             
@@ -377,20 +396,21 @@ const BuharVerileri = {
             
             this.debugLog('Form verileri:', Object.fromEntries(formData.entries()));
             
-            // Saat boşsa şu anki saati kullan
-            let timeValue = formData.get('steam-time');
-            if (!timeValue || timeValue.trim() === '') {
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                timeValue = `${hours}:${minutes}`;
-                this.debugLog('Saat boş, şu anki saat kullanılıyor:', timeValue);
-            }
+            // Seçilen tarihi al ve bir gün geriye al (dünün verisi olarak kaydet)
+            const selectedDate = new Date(formData.get('steam-date'));
+            const yesterday = new Date(selectedDate);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const year = yesterday.getFullYear();
+            const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+            const day = String(yesterday.getDate()).padStart(2, '0');
+            const formattedDate = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
+            
+            this.debugLog('Tarih dönüşümü:', `${formData.get('steam-date')} -> ${formattedDate} (bir gün geriye)`);
             
             const steamRecord = {
                 id: Date.now().toString(),
-                date: CONFIG.formatDate(new Date(formData.get('steam-date'))), // Tarihi formatla
-                time: timeValue,
+                date: formattedDate, // Bir gün geriye alınmış tarih
                 amount: parseFloat(formData.get('steam-amount')) || 0, // ton olarak kaydet
                 notes: formData.get('steam-notes') || '',
                 recordedBy: (Auth?.getCurrentUser()?.username || Auth?.getCurrentUser()?.name) || 'Bilinmeyen Kullanıcı'
@@ -419,13 +439,11 @@ const BuharVerileri = {
                 this.debugLog('Google Sheets sonucu:', sheetsResult);
                 
                 if (sheetsResult.success) {
-                    Utils.showToast('✅ Buhar verisi başarıyla kaydedildi! Sayfa yenileniyor...', 'success');
+                    Utils.showToast('✅ Buhar verisi başarıyla kaydedildi!', 'success');
                     
-                    // 🔥 BAŞARILI KAYIT SONRASI OTOMATİK YENİLEME
-                    setTimeout(() => {
-                        // Sayfayı tamamen yenile
-                        window.location.href = 'index.html?page=buhar';
-                    }, 1500); // 1.5 saniye sonra yenile
+                    // Formu temizle ve verileri yenile
+                    this.resetForm();
+                    this.loadGoogleSheetsData();
                     
                 } else {
                     this.debugLog('❌ Google Sheets hatası:', sheetsResult.error);
@@ -433,12 +451,11 @@ const BuharVerileri = {
                 }
             } else {
                 this.debugLog('🧪 Demo mod aktif, kayıt yapılıyor...');
-                Utils.showToast('✅ Buhar verisi demo modunda kaydedildi! Sayfa yenileniyor...', 'success');
+                Utils.showToast('✅ Buhar verisi demo modunda kaydedildi!', 'success');
                 
-                // 🔥 DEMO MOD'DA DA OTOMATİK YENİLEME
-                setTimeout(() => {
-                    window.location.href = 'index.html?page=buhar';
-                }, 1500);
+                // Formu temizle ve verileri yenile
+                this.resetForm();
+                this.loadGoogleSheetsData();
             }
             
             // Formu temizle
@@ -490,9 +507,9 @@ const BuharVerileri = {
     validateSteamData: function(data) {
         this.debugLog('Validasyon kontrolü başlıyor:', data);
         
-        if (!data.date || !data.time) {
-            this.debugLog('❌ Tarih veya saat eksik:', { date: data.date, time: data.time });
-            Utils.showToast('Tarih ve saat alanları zorunludur!', 'error');
+        if (!data.date) {
+            this.debugLog('❌ Tarih eksik:', { date: data.date });
+            Utils.showToast('Tarih alanı zorunludur!', 'error');
             return false;
         }
         
@@ -788,9 +805,19 @@ const BuharVerileri = {
             
             // Google Sheets'ten bu tarih için kayıt kontrolü yap
             if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
-                // Tarihi DD/MM/YYYY formatına çevir
-                const formattedDate = this.processDateTime(selectedDate, null, { outputFormat: 'DD/MM/YYYY' });
-                this.debugLog('Kayıt kontrolü için tarih formatı:', `${selectedDate} -> ${formattedDate}`);
+                // Seçilen tarihi bir gün geriye al (kaydedilecek tarih)
+                const selectedDateObj = new Date(selectedDate);
+                const recordDateObj = new Date(selectedDateObj);
+                recordDateObj.setDate(recordDateObj.getDate() - 1);
+                
+                const year = recordDateObj.getFullYear();
+                const month = String(recordDateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(recordDateObj.getDate()).padStart(2, '0');
+                const recordDate = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
+                
+                // Kontrol için DD/MM/YYYY formatına çevir (API için)
+                const formattedDate = this.processDateTime(recordDate, null, { outputFormat: 'DD/MM/YYYY' });
+                this.debugLog('Kayıt kontrolü:', `${selectedDate} -> ${recordDate} (kayıt) -> ${formattedDate} (API)`);
                 
                 const result = await GoogleSheetsAPI.getData('buhar', { 
                     date: formattedDate
@@ -800,41 +827,47 @@ const BuharVerileri = {
                 this.debugLog('İstenen tarih:', formattedDate);
                 this.debugLog('Gelen kayıtlar:', result.data);
                 
+                // Gelen kayıtların yapısını detaylı incele
+                if (result.data && result.data.length > 0) {
+                    this.debugLog('İlk kayıt detayı:', result.data[0]);
+                    this.debugLog('İlk kayıt keys:', Object.keys(result.data[0] || {}));
+                }
+                
                 if (result.success && result.data && result.data.length > 0) {
                     // Gelen kayıtların tarihlerini kontrol et
                     const matchingRecords = result.data.filter(record => {
-                        const recordDate = this.normalizeDate(record.date);
-                        const isMatch = recordDate === selectedDate;
-                        this.debugLog(`Kayıt eşleşme kontrolü: ${record.date} -> ${recordDate} vs ${selectedDate} = ${isMatch}`);
+                        const recordDateFromSheet = this.normalizeDate(record.Tarih); // 'date' yerine 'Tarih'
+                        const isMatch = recordDateFromSheet === recordDate;
+                        this.debugLog(`Kayıt eşleşme kontrolü: ${record.Tarih} -> ${recordDateFromSheet} vs ${recordDate} = ${isMatch}`);
                         return isMatch;
                     });
                     
                     this.debugLog(`Eşleşen kayıt sayısı: ${matchingRecords.length}`);
                     
-                    if (matchingRecords.length > 0) {
-                        // Kayıt varsa input'ları kilitle
-                        this.disableFormInputs(true);
-                        Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
-                    } else {
-                        // Kayıt yoksa input'ları aç
-                        this.disableFormInputs(false);
-                    }
+                if (matchingRecords.length > 0) {
+                    // Kayıt varsa input'ları kilitle
+                    this.disableFormInputs(true);
+                    Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
                 } else {
                     // Kayıt yoksa input'ları aç
                     this.disableFormInputs(false);
                 }
             } else {
-                // Demo modunda kontrol yapma
+                // Kayıt yoksa input'ları aç
                 this.disableFormInputs(false);
             }
-            
-        } catch (error) {
-            this.debugLog('Kayıt kontrolü hatası:', error);
-            // Hata durumunda input'ları açık bırak (güvenli varsayım)
+        } else {
+            // Demo modunda kontrol yapma
             this.disableFormInputs(false);
         }
-    },
-    
+            
+    } catch (error) {
+        this.debugLog('Kayıt kontrolü hatası:', error);
+        // Hata durumunda input'ları açık bırak (güvenli varsayım)
+        this.disableFormInputs(false);
+    }
+},
+
     /**
      * Form input'larını aktif/pasif yap
      */

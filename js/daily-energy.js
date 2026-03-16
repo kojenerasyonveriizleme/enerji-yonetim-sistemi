@@ -46,7 +46,7 @@ const DailyEnergy = {
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
+        const dateStr = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
         
         this.currentData.date = dateStr;
         

@@ -249,6 +249,7 @@ function saveVardiyaRecord(sheet, data) {
           value = data.id || Date.now().toString();
           break;
         case 'Tarih':
+          // Türkçe formatı koru, Date objesine çevirme
           value = data.tarih || '';
           break;
         case 'Vardiya Tipi':
@@ -397,11 +398,8 @@ function getVardiyaRecords(sheet, filters = {}) {
               'dd.MM.yyyy HH:mm:ss'
             );
           } else if (header === 'Tarih') {
-            cellValue = Utilities.formatDate(
-              cellValue,
-              'Europe/Istanbul',
-              'yyyy-MM-dd'
-            );
+            // Türkçe formatı koru, formatlama yapma
+            cellValue = cellValue.toString();
           }
         }
 
