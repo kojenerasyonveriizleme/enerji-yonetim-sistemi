@@ -450,6 +450,29 @@
     box-shadow: 0 6px 20px rgba(107, 114, 128, 0.3);
 }
 
+.kojen-actions .btn-warning {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.kojen-actions .btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.kojen-actions .btn-warning:disabled {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Header Cell */
 .kojen-table-cell.header-cell {
     background: #1e3a8a;

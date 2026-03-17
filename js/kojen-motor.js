@@ -109,6 +109,38 @@ const KojenMotor = {
 
                 input.addEventListener('focus', (e) => {
                     e.target.select();
+                    // Focus olduğunda onay durumunu sıfırla
+                    delete input.dataset.positiveConfirmed;
+                });
+
+                // Blur olayında pozitif değer kontrolü
+                input.addEventListener('blur', (e) => {
+                    const param = input.id.split('-').slice(2).join('-');
+                    if (param === 'karter-basinc' || param === 'on-kamara-basinc') {
+                        const value = parseFloat(input.value);
+                        if (!isNaN(value) && value > 0 && !input.dataset.positiveConfirmed) {
+                            // Pozitif değer için onay sor
+                            setTimeout(() => {
+                                if (confirm(`${param.toUpperCase()} için pozitif değer (${value}) girdiniz.\n\nNegatif değere çevirmek ister misiniz?`)) {
+                                    // Kullanıcı onayladı, negatife çevir
+                                    const negativeValue = -Math.abs(value);
+                                    input.value = negativeValue;
+                                    input.dataset.positiveConfirmed = 'true';
+                                    console.log(`✅ Kullanıcı onayladı, pozitif değer negatife çevrildi: ${param} ${value} → ${negativeValue}`);
+                                    
+                                    // Başarı mesajı
+                                    Utils.showToast(`✅ Değer negatife çevrildi: ${negativeValue}`, 'success');
+                                } else {
+                                    // Kullanıcı istemedi, pozitif değeri koru
+                                    input.dataset.positiveConfirmed = 'true';
+                                    console.log(`ℹ️ Kullanıcı pozitif değeri korumayı tercih etti: ${param} = ${value}`);
+                                    
+                                    // Bilgi mesajı
+                                    Utils.showToast(`ℹ️ Pozitif değer korundu: ${value}`, 'info');
+                                }
+                            }, 100);
+                        }
+                    }
                 });
 
                 cell.appendChild(input);
@@ -191,12 +223,27 @@ const KojenMotor = {
             });
         }
 
-        // Temizle butonu
-        const clearBtn = document.getElementById('clear-kojen-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                if (confirm('Tüm verileri temizlemek istediğinize emin misiniz?')) {
-                    this.clearAllData();
+        // Motor devre dışı butonu
+        const disableBtn = document.getElementById('motor-devre-disi-btn');
+        if (disableBtn) {
+            disableBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                if (disableBtn.disabled) {
+                    return;
+                }
+                
+                disableBtn.disabled = true;
+                disableBtn.textContent = 'Kaydediliyor...';
+                
+                try {
+                    await this.saveMotorDevreDisi();
+                } catch (error) {
+                    console.error('Motor devre dışı kaydetme hatası:', error);
+                    Utils.showToast('❌ Kaydetme hatası: ' + error.message, 'error');
+                } finally {
+                    disableBtn.disabled = false;
+                    disableBtn.textContent = 'Motor Devre Dışı Kaydet';
                 }
             });
         }
@@ -242,22 +289,22 @@ const KojenMotor = {
             }
         });
 
-        // Debounce için timer
-        let inputChangeTimer = null;
-        let lastCheckedHour = null; // Son kontrol edilen saati takip et
-        
         // Input değişimlerini dinle - KONTROLSÜZ
         const inputs = document.querySelectorAll('.kojen-input');
         inputs.forEach(input => {
             input.addEventListener('input', (e) => {
-                // ✅ ÇÖZÜM: KARTER ve ÖN KAMARA BASINCI için negatif değeri otomatik çevir
+                // Negatif değer kontrolü - sadece log yap, değeri olduğu gibi bırak
                 const param = input.id.split('-').slice(2).join('-');
                 if (param === 'karter-basinc' || param === 'on-kamara-basinc') {
                     const value = parseFloat(input.value);
-                    if (!isNaN(value) && value < 0) {
-                        // Negatif değer girilmişse, pozitife çevir
-                        input.value = Math.abs(value);
-                        console.log(`⚠️ Negatif değer pozitife çevrildi (${param}): ${value} → ${Math.abs(value)}`);
+                    if (!isNaN(value)) {
+                        if (value < 0) {
+                            console.log(`⚠️ Negatif değer girildi (${param}): ${value}`);
+                            // Değeri olduğu gibi bırak, sadece log yap
+                        } else if (value > 0) {
+                            console.log(`ℹ️ Pozitif değer girildi (${param}): ${value}`);
+                            // Blur olayında onay sorulacak, burada sadece log yap
+                        }
                     }
                 }
             });
@@ -267,8 +314,8 @@ const KojenMotor = {
         const dateInput = document.getElementById('kojen-motor-date');
         if (dateInput) {
             dateInput.addEventListener('change', async () => {
-                // ✅ HER MOTOR İÇİN: Tüm saatlerin kayıt durumunu kontrol et
-                console.log(`🔄 Tarih değişti: ${dateInput.value} için saat kontrolü yapılıyor...`);
+                // HER MOTOR İÇİN: Tüm saatlerin kayıt durumunu kontrol et
+                console.log(` Tarih değişti: ${dateInput.value} için saat kontrolü yapılıyor...`);
                 await this.checkAllHoursRecords();
             });
         }
@@ -351,17 +398,11 @@ const KojenMotor = {
         
         // Negatif değer kontrolü (sadece karter-basinc ve on-kamara-basinc için)
         if (param === 'karter-basinc' || param === 'on-kamara-basinc') {
+            // Sadece aralık kontrolü yap, negatif değerlere izin ver
             if (isNaN(value) || value < -999 || value > 999) {
-                // ✅ ÇÖZÜM: Negatif değeri otomatik al
-                if (!isNaN(value) && value < 0) {
-                    // Negatif değer girilmişse, pozitife çevir
-                    input.value = Math.abs(value);
-                    console.log(`⚠️ Negatif değer pozitife çevrildi: ${value} → ${Math.abs(value)}`);
-                } else {
-                    input.value = '';
-                    input.classList.add('error');
-                    setTimeout(() => input.classList.remove('error'), 2000);
-                }
+                input.value = '';
+                input.classList.add('error');
+                setTimeout(() => input.classList.remove('error'), 2000);
                 return false;
             }
         } else {
@@ -440,22 +481,30 @@ const KojenMotor = {
             let aktifVardiya;
             
             if (currentHour < 8) {
-                aktifVardiya = 'gece';
+                aktifVardiya = 'GECESİ'; // Büyük harflerle
             } else if (currentHour < 16) {
-                aktifVardiya = 'gunduz';
+                aktifVardiya = 'GUNDUZ'; // Büyük harflerle
             } else {
-                aktifVardiya = 'aksam';
+                aktifVardiya = 'AKSAM'; // Büyük harflerle
             }
             
             console.log('📋 Parametreler hazır:', {selectedDate, selectedMotor, aktifVardiya});
             
             // Tüm verileri saat bazlı al
             const allData = this.getAllDataByHour();
-            console.log('🔍 Toplanan veriler:', allData);
-            console.log('🔍 Veri sayısı:', Object.keys(allData).length);
+            
+            // Saat formatını HH:MM:SS formatında güncelle
+            const formattedAllData = {};
+            Object.keys(allData).forEach(hour => {
+                const formattedHour = hour.padStart(2, '0') + ':00:00';
+                formattedAllData[formattedHour] = allData[hour];
+            });
+            
+            console.log('🔍 Toplanan veriler:', formattedAllData);
+            console.log('🔍 Veri sayısı:', Object.keys(formattedAllData).length);
             
             // Boş kontrolü
-            const hasData = Object.values(allData).some(hourData => 
+            const hasData = Object.values(formattedAllData).some(hourData => 
                 Object.values(hourData).some(value => value && value.trim() !== '')
             );
             console.log('🔍 Veri var mı:', hasData);
@@ -476,7 +525,7 @@ const KojenMotor = {
                 
                 // Veriyi Google Sheets'e gönder
                 const saveData = {
-                    allData: JSON.stringify(allData),
+                    allData: JSON.stringify(formattedAllData),
                     tarih: selectedDate,
                     vardiya: aktifVardiya,
                     motorId: selectedMotor
@@ -627,11 +676,11 @@ const KojenMotor = {
         let aktifVardiya;
         
         if (currentHour < 8) {
-            aktifVardiya = 'gece';
+            aktifVardiya = 'GECESİ'; // Büyük harflerle
         } else if (currentHour < 16) {
-            aktifVardiya = 'gunduz';
+            aktifVardiya = 'GUNDUZ'; // Büyük harflerle
         } else {
-            aktifVardiya = 'aksam';
+            aktifVardiya = 'AKSAM'; // Büyük harflerle
         }
         
         console.log(`🕐 Vardiya: ${aktifVardiya}`);
@@ -734,7 +783,162 @@ const KojenMotor = {
         
         this.saveToLocalStorage();
         Utils.showToast('Tüm veriler temizlendi', 'success');
-    }
+    },
+
+    /**
+     * Motor devre dışı kaydet
+     */
+    saveMotorDevreDisi: async function() {
+        try {
+            console.log('🔧 Motor devre dışı kaydetme işlemi başlatıldı...');
+            
+            const dateInput = document.getElementById('kojen-motor-date');
+            const selectedDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+            
+            // Aktif motoru al
+            const activeMotorBtn = document.querySelector('.motor-btn.active');
+            const selectedMotor = activeMotorBtn ? activeMotorBtn.dataset.motor : 'motor-1';
+            
+            // Vardiyayı AKTİF TABLO VARDİYASI ile belirle
+            const currentHour = new Date().getHours();
+            let aktifVardiya;
+            
+            if (currentHour < 8) {
+                aktifVardiya = 'GECESİ'; // Büyük harflerle
+            } else if (currentHour < 16) {
+                aktifVardiya = 'GUNDUZ'; // Büyük harflerle
+            } else {
+                aktifVardiya = 'AKSAM'; // Büyük harflerle
+            }
+            
+            // Mevcut saati formatla (HH:MM:SS formatında)
+            const formattedHour = currentHour.toString().padStart(2, '0') + ':00:00';
+            
+            console.log('📋 Parametreler:', {selectedDate, selectedMotor, aktifVardiya, formattedHour});
+            
+            // Önce bu saat için kayıt var mı diye kontrol et
+            if (window.GoogleSheetsAPI) {
+                console.log(`🔄 ${selectedMotor} için ${formattedHour} saati kontrol ediliyor...`);
+                
+                const records = await this.getRecordsBatch(selectedMotor, selectedDate, aktifVardiya);
+                
+                // Mevcut saat için kayıt var mı?
+                const existingRecord = records.find(record => {
+                    const recordHour = record['Saat'];
+                    // Gelen saat formatını kontrol et (8, 08:00, 08:00:00 olabilir)
+                    if (recordHour) {
+                        // Sadece saat kısmını karşılaştır
+                        const recordHourNum = parseInt(recordHour.toString().split(':')[0]);
+                        return recordHourNum === currentHour;
+                    }
+                    return false;
+                });
+                
+                if (existingRecord) {
+                    Utils.showToast(`⚠️ ${formattedHour} için zaten kayıt mevcut!`, 'warning');
+                    return;
+                }
+                
+                console.log(`✅ ${formattedHour} için kayıt bulunamadı, devre dışı kaydı yapılacak`);
+                
+                // Tüm inputlara "DD" kodu gönder
+                const allInputs = document.querySelectorAll('.kojen-input');
+                const devreDisiData = {};
+                
+                allInputs.forEach(input => {
+                    const parts = input.id.split('-');
+                    const hour = parts[1];
+                    const param = parts.slice(2).join('-');
+                    
+                    // Sadece mevcut saat için "DD" yap
+                    if (hour === currentHour.toString()) {
+                        devreDisiData[param] = 'DD';
+                    }
+                });
+                
+                console.log('🔧 Devre dışı verisi:', devreDisiData);
+                
+                // Veriyi Google Sheets'e gönder (HH:MM:SS formatında)
+                const saveData = {
+                    allData: JSON.stringify({[formattedHour]: devreDisiData}),
+                    tarih: selectedDate,
+                    vardiya: aktifVardiya,
+                    motorId: selectedMotor
+                };
+                
+                console.log('🔍 Gönderilecek devre dışı verisi:', saveData);
+                
+                // Kaydetme işlemi
+                let saveTimeoutResolved = false;
+                const saveTimeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => {
+                        if (!saveTimeoutResolved) {
+                            reject(new Error('Devre dışı kaydetme timeout'));
+                        }
+                    }, 8000);
+                });
+                
+                let saveResult;
+                try {
+                    const savePromise = GoogleSheetsAPI.saveData('kojen_motor', saveData);
+                    saveResult = await Promise.race([savePromise, saveTimeoutPromise]);
+                    saveTimeoutResolved = true;
+                    console.log('📥 Devre dışı kaydetme sonucu:', saveResult);
+                } catch (error) {
+                    saveTimeoutResolved = true;
+                    if (error.message === 'Devre dışı kaydetme timeout') {
+                        saveResult = { success: false, error: 'Devre dışı kaydetme işlemi çok sürdü' };
+                    } else {
+                        throw error;
+                    }
+                }
+                
+                if (!saveResult.success) {
+                    Utils.showToast(`❌ Devre dışı kayıt hatası: ${saveResult.error}`, 'error');
+                    return;
+                }
+                
+                Utils.showToast('✅ Motor devre dışı olarak kaydedildi', 'success');
+                
+                // Inputları "DD" ile doldur ve devre dışı bırak
+                allInputs.forEach(input => {
+                    const parts = input.id.split('-');
+                    const hour = parts[1];
+                    
+                    if (hour === currentHour.toString()) {
+                        input.value = 'DD';
+                        input.disabled = true;
+                        input.classList.add('disabled');
+                        input.title = `Saat ${formattedHour} için motor devre dışı`;
+                        
+                        // Input validation hatasını temizle
+                        input.setCustomValidity('');
+                    }
+                });
+                
+                // Butonu da devre dışı bırak
+                const disableBtn = document.getElementById('motor-devre-disi-btn');
+                if (disableBtn) {
+                    disableBtn.disabled = true;
+                    disableBtn.textContent = 'Motor Devre Dışı (Kaydedildi)';
+                }
+                
+                // Cache'i temizle
+                const cacheKey = `kojen_records_${selectedMotor}_${selectedDate}_${aktifVardiya}`;
+                localStorage.removeItem(cacheKey);
+                
+                console.log('✅ Motor devre dışı kaydetme işlemi tamamlandı');
+                
+            } else {
+                Utils.showToast('❌ GoogleSheetsAPI bulunamadı', 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Motor devre dışı kaydetme hatası:', error);
+            Utils.showToast('❌ Devre dışı kaydetme sırasında hata oluştu', 'error');
+            throw error;
+        }
+    },
 };
 
 // KojenMotor'u global olarak erişilebilir yap

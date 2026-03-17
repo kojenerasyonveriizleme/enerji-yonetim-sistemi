@@ -130,8 +130,8 @@ const CONFIG = {
         kullanici: 'https://script.google.com/macros/s/AKfycbwEPH0D2wkRVd9y483SQnaya4n3mr9dnYNlObREze-GPSjTO-fCxlZtkWDwrKkdTB7t/exec',
         gunluk_enerji_yeni: 'https://script.google.com/macros/s/AKfycbw-3C6Ulj7ou_rJ6rgmrKsalKRtE70xEUbKA8cH89JSmQAOmRPi6JAMxhSNsFpGNxUT/exec',
         gunluk_enerji_alternatif: 'https://script.google.com/macros/s/AKfycbwhyJ15sDwLFF1dFj-B4Mw7mcu2rpRNLo25w8d3-NQyhpEQD_8UV8H782ty53hyF6bU/exec',
-        kojen_motor: 'https://script.google.com/macros/s/AKfycbxLJUruVLGLU_6okzdO63t3F3v80mH8mjXtnT0ri5PdgCqO1BVP2lorBhiPkFWoKVxf/exec',
-        kojen_enerji: 'https://script.google.com/macros/s/AKfycby6rScxJ2XAJPMRd9C6CiY_A-kp4jcH5I9tHX_J0hVOW-uC75lAknPyp-um_62BKWPL/exec',
+        kojen_motor: 'https://script.google.com/macros/s/AKfycbwPecu7487VCknFB7Y2e2Fu-28CGTYijpI24EYZQoeAu-Tzx1EoeVzGYpd829vhVFM/exec',
+        kojen_enerji: 'https://script.google.com/macros/s/AKfycbx_KxOlMDOmnOy7rtOaAOoU8PAb6FMd7CPK7dVlSTPSjBjioSR9JGXf4ncFJ0num7PV/exec',
         
          // Diğer modüller geçici olarak devre dışı
         // kojen_enerji: 'URL',

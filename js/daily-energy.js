@@ -21,6 +21,13 @@ const DailyEnergy = {
     init: function() {
         console.log('📊 Günlük Enerji modülü başlatılıyor...');
         
+        // ✅ Hourly energy container'ı kaldır
+        const hourlyContainer = document.querySelector('#gunluk-enerji-page > div.hourly-energy-container > div > div');
+        if (hourlyContainer) {
+            hourlyContainer.remove();
+            console.log('✅ Hourly energy container kaldırıldı');
+        }
+        
         // API URL'ini al
         this.apiUrl = CONFIG.GOOGLE_SHEETS_WEB_APP_URLS.gunluk_enerji;
         

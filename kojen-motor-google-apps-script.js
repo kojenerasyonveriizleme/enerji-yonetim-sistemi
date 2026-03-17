@@ -339,7 +339,7 @@ function saveKojenMotorRecord(sheet, data) {
       const recordData = {
         tarih: tarih,
         vardiya: vardiya,
-        saat: parseInt(hour),
+        saat: hour,
         ...hourData
       };
       
@@ -620,8 +620,12 @@ function getKojenMotorRecords(sheet, filters = {}) {
             cellValue = Utilities.formatDate(
               cellValue,
               'Europe/Istanbul',
-              'yyyy-MM-dd'
+              'dd/MM/yyyy'
             );
+          } else if (header === 'Saat') {
+            // Saat formatını sadece saat olarak döndür (örn: 6 veya 8)
+            const hour = cellValue.getHours();
+            cellValue = hour.toString();
           }
         }
 
@@ -665,7 +669,28 @@ function getKojenMotorRecords(sheet, filters = {}) {
     if (filters.tarih) {
       records = records.filter(record => {
         const recordDate = record['Tarih'] ? record['Tarih'].toString() : '';
-        const filterDate = filters.tarih.toString();
+        // Filter tarihini de dd/MM/yyyy formatına çevir
+        let filterDate = filters.tarih.toString();
+        if (filters.tarih instanceof Date) {
+          filterDate = Utilities.formatDate(filters.tarih, 'Europe/Istanbul', 'dd/MM/yyyy');
+        } else {
+          // String formatını normalize et
+          filterDate = filters.tarih.toString()
+            .replace(/\./g, '/')
+            .replace(/-/g, '/')
+            .trim();
+          
+          try {
+            const parsedDate = new Date(filterDate);
+            if (!isNaN(parsedDate.getTime())) {
+              filterDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd/MM/yyyy');
+            }
+          } catch (e) {
+            // Formatlama hatası olursa orijinal string kullan
+            Logger.log('Filter tarih formatlama hatası: ' + e.toString());
+          }
+        }
+        
         return recordDate === filterDate;
       });
     }
@@ -736,11 +761,30 @@ function checkKojenMotorRecord(sheet, data) {
       };
     }
     
-    // Tarih formatını normalize et
-    const normalizedTargetDate = tarih.toString()
-      .replace(/\./g, '-')
-      .replace(/\//g, '-')
-      .trim();
+    // Tarih formatını normalize et - Utilities.formatDate kullan (dd/MM/yyyy formatında)
+    let normalizedTargetDate = tarih.toString();
+    
+    // Eğer tarih Date objesi ise formatla
+    if (tarih instanceof Date) {
+      normalizedTargetDate = Utilities.formatDate(tarih, 'Europe/Istanbul', 'dd/MM/yyyy');
+    } else {
+      // String ise normalize et
+      normalizedTargetDate = tarih.toString()
+        .replace(/\./g, '/')
+        .replace(/-/g, '/')
+        .trim();
+      
+      // Eğer format farklıysa tekrar formatla
+      try {
+        const parsedDate = new Date(normalizedTargetDate);
+        if (!isNaN(parsedDate.getTime())) {
+          normalizedTargetDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd/MM/yyyy');
+        }
+      } catch (e) {
+        // Formatlama hatası olursa orijinal string kullan
+        Logger.log('Tarih formatlama hatası, orijinal kullanılıyor: ' + e.toString());
+      }
+    }
     
     // Vardiya tipini tam metin formatına çevir
     const vardiyaTipMap = {
@@ -777,7 +821,7 @@ function checkKojenMotorRecord(sheet, data) {
       const midDate = values[mid][headers.indexOf('Tarih')];
       
       if (midDate) {
-        const normalizedMidDate = Utilities.formatDate(midDate, 'Europe/Istanbul', 'yyyy-MM-dd');
+        const normalizedMidDate = Utilities.formatDate(midDate, 'Europe/Istanbul', 'dd/MM/yyyy');
         
         if (normalizedMidDate < normalizedTargetDate) {
           low = mid + 1;

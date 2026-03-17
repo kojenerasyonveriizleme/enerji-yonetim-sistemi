@@ -33,7 +33,7 @@ const EnerjiModulu = {
      * Modülü başlat
      */
     init: function() {
-        console.log('🔌 Enerji modülü başlatılıyor...');
+        // console.log('🔌 Enerji modülü başlatılıyor...'); // Gizlendi
         this.bindEvents();
         this.setCurrentDateTime();
         this.createCurrentHourInput(); // Otomatik input oluştur
@@ -278,7 +278,7 @@ const EnerjiModulu = {
             });
         }
         
-        console.log('🎧 Input event\'lar kuruldu (manuel kaydet modu)');
+        // console.log('🎧 Input event\'lar kuruldu (manuel kaydet modu)'); // Gizlendi
     },
     
     /**
@@ -289,11 +289,11 @@ const EnerjiModulu = {
         const aktifInput = document.querySelector(`[data-hour="${currentHour}"][data-field="aktif"]`);
         const reaktifInput = document.querySelector(`[data-hour="${currentHour}"][data-field="reaktif"]`);
         
-        console.log('🔍 Kaydetme kontrolü:', {
-            currentHour: currentHour,
-            aktifInput: aktifInput,
-            reaktifInput: reaktifInput
-        });
+        // console.log('🔍 Kaydetme kontrolü:', {
+        //     currentHour: currentHour,
+        //     aktifInput: aktifInput,
+        //     reaktifInput: reaktifInput
+        // }); // Gizlendi
         
         if (!aktifInput || !reaktifInput) {
             // Utils.showToast('❌ Input\'lar bulunamadı', 'error');
@@ -303,12 +303,12 @@ const EnerjiModulu = {
         const aktifValue = parseFloat(aktifInput.value) || 0;
         const reaktifValue = parseFloat(reaktifInput.value) || 0;
         
-        console.log('📊 Girilen değerler:', {
-            aktifValue: aktifValue,
-            reaktifValue: reaktifValue,
-            aktifInputValue: aktifInput.value,
-            reaktifInputValue: reaktifInput.value
-        });
+        // console.log('📊 Girilen değerler:', {
+        //     aktifValue: aktifValue,
+        //     reaktifValue: reaktifValue,
+        //     aktifInputValue: aktifInput.value,
+        //     reaktifInputValue: reaktifInput.value
+        // }); // Gizlendi
         
         if (aktifValue === 0 && reaktifValue === 0) {
             // Utils.showToast('⚠️ Lütfen en az bir değer girin', 'warning');
@@ -326,7 +326,7 @@ const EnerjiModulu = {
             this.currentData.records[currentHour].reaktif = reaktifValue;
             this.currentData.records[currentHour].timestamp = new Date().toISOString();
             
-            console.log('💾 Kaydedilecek veri:', this.currentData.records[currentHour]);
+            // console.log('💾 Kaydedilecek veri:', this.currentData.records[currentHour]); // Gizlendi
             
             // Google Sheets'e SADECE gerçek değerleri gönder - VARDİYA VE SAAT EKLENDİ
             const googleSheetsData = {
@@ -560,18 +560,18 @@ const EnerjiModulu = {
         const dateInput = document.getElementById('hourly-date');
         const shiftSelect = document.getElementById('hourly-shift');
         
-        console.log('🕐 setCurrentDateTime çalışıyor:', {
-            now: now,
-            dateInput: dateInput,
-            shiftSelect: shiftSelect
-        });
+        // console.log('🕐 setCurrentDateTime çalışıyor:', {
+        //     now: now,
+        //     dateInput: dateInput,
+        //     shiftSelect: shiftSelect
+        // }); // Gizlendi
         
         // Tarihi bugün olarak ayarla
         if (dateInput) {
             const today = now.toISOString().split('T')[0];
             dateInput.value = today;
             this.currentData.date = today;
-            console.log('� Tarih ayarlandı:', today);
+            // console.log(' Tarih ayarlandı:', today); // Gizlendi
         } else {
             console.log('❌ Tarih input bulunamadı');
         }
@@ -581,12 +581,12 @@ const EnerjiModulu = {
             const currentShift = this.getCurrentShift();
             shiftSelect.value = currentShift;
             this.currentData.shift = currentShift;
-            console.log('🔄 Vardiya ayarlandı:', currentShift);
+            // console.log('🔄 Vardiya ayarlandı:', currentShift); // Gizlendi
         } else {
             console.log('❌ Vardiya select bulunamadı');
         }
         
-        console.log('📊 Mevcut veri:', this.currentData);
+        // console.log('📊 Mevcut veri:', this.currentData); // Gizlendi
     },
     
     /**
@@ -640,17 +640,17 @@ const EnerjiModulu = {
     updateHeaders: function() {
         const currentHour = this.getCurrentHour()[0];
         
-        console.log('🔍 updateHeaders çalışıyor:', {
-            currentHour: currentHour,
-            shift: this.currentData.shift,
-            shiftTitle: this.SHIFT_TITLES[this.currentData.shift]
-        });
+        // console.log('🔍 updateHeaders çalışıyor:', {
+        //     currentHour: currentHour,
+        //     shift: this.currentData.shift,
+        //     shiftTitle: this.SHIFT_TITLES[this.currentData.shift]
+        // }); // Gizlendi
         
         // Input kartının başlığını güncelle
         const inputHeader = document.querySelector('.input-header h3');
         if (inputHeader) {
             inputHeader.textContent = `📊 ${this.SHIFT_TITLES[this.currentData.shift]} - ${currentHour}`;
-            console.log('✅ Input header güncellendi');
+            // console.log('✅ Input header güncellendi'); // Gizlendi
         } else {
             console.log('❌ Input header bulunamadı');
         }
@@ -659,13 +659,13 @@ const EnerjiModulu = {
         const dateBadge = document.querySelector('.date-badge');
         if (dateBadge) {
             dateBadge.textContent = CONFIG.formatDate(new Date(this.currentData.date));
-            console.log('✅ Date badge güncellendi');
+            // console.log('✅ Date badge güncellendi'); // Gizlendi
         }
         
         const shiftBadge = document.querySelector('.shift-badge');
         if (shiftBadge) {
             shiftBadge.textContent = this.SHIFT_TIMES[this.currentData.shift];
-            console.log('✅ Shift badge güncellendi');
+            // console.log('✅ Shift badge güncellendi'); // Gizlendi
         }
         
         // Sayfa başlığını güncelleme (orijinal başlık kalsın)
@@ -681,18 +681,18 @@ const EnerjiModulu = {
      * Kayıtlı verileri yükle (localStorage + Google Sheets)
      */
     loadSavedRecords: function() {
-        console.log('📂 loadSavedRecords başlatıldı');
-        console.log('📊 Mevcut veri:', this.currentData);
+        // console.log('📂 loadSavedRecords başlatıldı'); // Gizlendi
+        // console.log('📊 Mevcut veri:', this.currentData); // Gizlendi
         
         // Google Sheets'ten veri çek
         this.loadGoogleSheetsRecords();
         
         // LocalStorage'dan yükle
         const storageKey = `hourly_${this.currentData.date}_${this.currentData.shift}`;
-        console.log('🔑 Storage key:', storageKey);
+        // console.log('🔑 Storage key:', storageKey); // Gizlendi
         
         const savedData = Utils.loadFromStorage(storageKey, {});
-        console.log('💾 LocalStorage verisi:', savedData);
+        // console.log('💾 LocalStorage verisi:', savedData); // Gizlendi
         
         this.currentData.records = savedData;
         
@@ -701,7 +701,7 @@ const EnerjiModulu = {
         const recordCountElement = document.getElementById('record-count');
         if (recordCountElement) {
             recordCountElement.textContent = `${savedCount}/1 kayıt`; // Sadece 1 saat olduğu için 1/1
-            console.log('📈 Kayıt sayısı güncellendi:', savedCount);
+            // console.log('📈 Kayıt sayısı güncellendi:', savedCount); // Gizlendi
         }
         
         // Input durumlarını güncelle
@@ -741,7 +741,7 @@ const EnerjiModulu = {
             }
         });
         
-        console.log('✅ loadSavedRecords tamamlandı');
+        // console.log('✅ loadSavedRecords tamamlandı'); // Gizlendi
     },
     
     /**
@@ -844,7 +844,7 @@ const EnerjiModulu = {
         }
         
         // Durum bilgisini logla
-        console.log(`🔒 Input durumu: ${hasData ? 'Kilitli' : 'Açık'} (${currentHour})`);
+        // console.log(`🔒 Input durumu: ${hasData ? 'Kilitli' : 'Açık'} (${currentHour})`); // Gizlendi
         
         // Kullanıcı bilgilendirme
         if (hasData) {
@@ -948,7 +948,7 @@ const EnerjiModulu = {
      * Google Sheets kayıtlarını işle (AKTİF)
      */
     processGoogleSheetsRecords: function(data) {
-        console.log('📊 Google Sheets verileri işleniyor:', data);
+        // console.log('📊 Google Sheets verileri işleniyor:', data); // Gizlendi
         
         const storageKey = `hourly_${this.currentData.date}_${this.currentData.shift}`;
         let savedData = Utils.loadFromStorage(storageKey, {});
@@ -958,7 +958,7 @@ const EnerjiModulu = {
         const latestRecords = new Map();
         
         data.forEach(record => {
-            console.log('🔍 Gelen kayıt:', record);
+            // console.log('🔍 Gelen kayıt:', record); // Gizlendi
             
             // Tarih ve saat kontrolü
             let recordDate = record.Tarih;
@@ -995,7 +995,7 @@ const EnerjiModulu = {
                 }
             }
             
-            console.log(`🔄 Eşleşme kontrolü: ${recordDate}=${this.currentData.date}, ${recordHour} saati`);
+            // console.log(`🔄 Eşleşme kontrolü: ${recordDate}=${this.currentData.date}, ${recordHour} saati`); // Gizlendi
             
             // Tarih eşleşmesi kontrolü
             if (recordDate === this.currentData.date) {
@@ -1075,9 +1075,9 @@ const EnerjiModulu = {
         this.updateInputStates();
         
         if (hasMatchingRecord) {
-            console.log(`✅ ${latestRecords.size} geçerli kayıt yüklendi`);
+            // console.log(`✅ ${latestRecords.size} geçerli kayıt yüklendi`); // Gizlendi
         } else {
-            console.log(`⚠️ Eşleşen kayıt bulunamadı`);
+            // console.log(`⚠️ Eşleşen kayıt bulunamadı`); // Gizlendi
         }
     }
 };
