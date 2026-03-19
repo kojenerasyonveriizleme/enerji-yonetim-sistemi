@@ -24,12 +24,14 @@ const ThemeManager = {
      * Event listener'ları ayarla
      */
     setupEventListeners: function() {
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
+        // Tüm theme toggle butonlarını bul
+        const themeToggles = document.querySelectorAll('.theme-toggle');
+        
+        themeToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
                 this.toggleTheme();
             });
-        }
+        });
     },
 
     /**
@@ -49,11 +51,11 @@ const ThemeManager = {
             console.warn('localStorage erişim hatası:', e);
         }
         
-        // İkon değiştir
-        const themeIcon = document.querySelector('.theme-toggle-icon');
-        if (themeIcon) {
-            themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        }
+        // İkonları değiştir
+        const themeIcons = document.querySelectorAll('.theme-toggle-icon');
+        themeIcons.forEach(icon => {
+            icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
         
         // Toast bildirim
         if (window.Utils) {
@@ -83,11 +85,11 @@ const ThemeManager = {
             const html = document.documentElement;
             html.setAttribute('data-theme', savedTheme);
             
-            // İkon ayarla
-            const themeIcon = document.querySelector('.theme-toggle-icon');
-            if (themeIcon) {
-                themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-            }
+            // İkonları ayarla
+            const themeIcons = document.querySelectorAll('.theme-toggle-icon');
+            themeIcons.forEach(icon => {
+                icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            });
         }, 50);
     },
 
@@ -107,11 +109,11 @@ const ThemeManager = {
         
         html.setAttribute('data-theme', systemTheme);
         
-        // İkon ayarla
-        const themeIcon = document.querySelector('.theme-toggle-icon');
-        if (themeIcon) {
-            themeIcon.textContent = systemTheme === 'dark' ? '☀️' : '🌙';
-        }
+        // İkonları ayarla
+        const themeIcons = document.querySelectorAll('.theme-toggle-icon');
+        themeIcons.forEach(icon => {
+            icon.textContent = systemTheme === 'dark' ? '☀️' : '🌙';
+        });
     }
 };
 

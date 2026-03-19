@@ -152,9 +152,32 @@
             <section id="dashboard-page" class="page active">
                 <header class="page-header">
                     <div class="header-left">
-                        <div class="main-logo">
-                            <h1>KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ</h1>
-                            <p>KOJENERASYON BÖLÜMÜ</p>
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                                <h1 class="main-title fade-in">
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">⚡</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">📊</span>
+                                        TAKİP VE BAKIM SİSTEMİ
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="header-center">
@@ -324,12 +347,50 @@
             <!-- Saatlik Aktif ve Reaktif Page -->
             <section id="saatlik-page" class="page">
                 <header class="page-header">
-                    <div class="header-content">
-                        <h1>
-                            KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ
-                            <span>⚙️ KOJENERASYON BÖLÜMÜ</span>
-                            <span>📊 SAATLİK AKTİF VE REAKTİF</span>
-                        </h1>
+                    <div class="header-left">
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d-saatlik">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                               
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">⚡</span>
+                                        SAATLİK AKTİF VE REAKTİF
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-center">
+                        <span id="current-date-saatlik"></span>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info-container">
+                            <span id="user-info-saatlik" class="user-info"></span>
+                        </div>
+                        <button class="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle-saatlik" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
                     </div>
                 </header>
                 
@@ -1303,6 +1364,124 @@
         document.documentElement.dataset.theme =
             saved || (prefersDark ? 'dark' : 'light');
     })();
+    
+    // ===== 3D LOGO INTERAKTİF EFEKTLER =====
+    (() => {
+        // Dashboard logosu
+        const logo3d = document.getElementById('logo-3d');
+        // Saatlik sayfası logosu
+        const logo3dSaatlik = document.getElementById('logo-3d-saatlik');
+        
+        // Her iki logo için de aynı efektleri uygula
+        [logo3d, logo3dSaatlik].forEach(logo => {
+            if (!logo) return;
+            
+            let mouseX = 0;
+            let mouseY = 0;
+            let currentX = 0;
+            let currentY = 0;
+            let isHovering = false;
+            
+            // Mouse takibi
+            logo.addEventListener('mousemove', (e) => {
+                const rect = logo.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                mouseX = (e.clientX - centerX) / 4;
+                mouseY = (e.clientY - centerY) / 4;
+                
+                if (!isHovering) {
+                    isHovering = true;
+                    logo.style.transition = 'none';
+                }
+            });
+            
+            // Mouse离开时重置
+            logo.addEventListener('mouseleave', () => {
+                isHovering = false;
+                mouseX = 0;
+                mouseY = 0;
+                logo.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+            
+            // Smooth animasyon döngüsü
+            function animate3D() {
+                if (isHovering) {
+                    currentX += (mouseX - currentX) * 0.1;
+                    currentY += (mouseY - currentY) * 0.1;
+                    
+                    logo.style.transform = `
+                        perspective(1000px) 
+                        rotateY(${currentX}deg) 
+                        rotateX(${-currentY}deg) 
+                        scale(1.1)
+                    `;
+                } else {
+                    logo.style.transform = `
+                        perspective(1000px) 
+                        rotateY(0deg) 
+                        rotateX(0deg) 
+                        scale(1)
+                    `;
+                }
+                
+                requestAnimationFrame(animate3D);
+            }
+            
+            animate3D();
+            
+            // Tıklayınca özel efekt
+            logo.addEventListener('click', () => {
+                logo.style.animation = 'none';
+                setTimeout(() => {
+                    logo.style.animation = 'threeDTwist 0.6s ease-out';
+                }, 10);
+                
+                // Ripple efekti
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 10px;
+                    height: 10px;
+                    background: rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: rippleEffect 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                logo.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        
+        // Badge'lere de 3D efekt
+        const badges = document.querySelectorAll('.badge');
+        badges.forEach(badge => {
+            badge.addEventListener('click', () => {
+                badge.style.animation = 'none';
+                setTimeout(() => {
+                    badge.style.animation = 'threeDTwist 0.4s ease-out';
+                }, 10);
+            });
+        });
+    })();
+    
+    // Ripple efekti animasyonu
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes rippleEffect {
+            to {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
     </script>
 </body>
 </html>

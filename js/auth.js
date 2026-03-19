@@ -415,6 +415,12 @@ const Auth = {
         // Kullanici bilgilerini goster
         document.getElementById('user-info').textContent = `Hos geldiniz, ${currentUser.name}`;
         
+        // Saatlik sayfasindaki kullanici bilgisini de guncelle
+        const userInfoSaatlik = document.getElementById('user-info-saatlik');
+        if (userInfoSaatlik) {
+            userInfoSaatlik.textContent = `${currentUser.name}`;
+        }
+        
         // Admin menüsünü kontrol et
         this.toggleAdminMenu();
         
