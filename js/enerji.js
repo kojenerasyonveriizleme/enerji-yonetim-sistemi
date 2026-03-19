@@ -675,6 +675,34 @@ const EnerjiModulu = {
         } else {
             console.log('❌ Sayfa başlığı bulunamadı');
         }
+        
+        const dailyPageHeader = document.querySelector('#gunluk-enerji-page .page-header h1');
+        if (dailyPageHeader) {
+            console.log('✅ Sayfa başlığı korundu: "Günlük Enerji Verileri"');
+        } else {
+            console.log('❌ Günlük Enerji sayfa başlığı bulunamadı');
+        }
+        
+        const buharPageHeader = document.querySelector('#buhar-page .page-header h1');
+        if (buharPageHeader) {
+            console.log('✅ Sayfa başlığı korundu: "Buhar Verileri"');
+        } else {
+            console.log('❌ Buhar sayfa başlığı bulunamadı');
+        }
+        
+        const kojenMotorPageHeader = document.querySelector('#kojen-motor-page .page-header h1');
+        if (kojenMotorPageHeader) {
+            console.log('✅ Sayfa başlığı korundu: "Kojen Motor Verileri"');
+        } else {
+            console.log('❌ Kojen Motor sayfa başlığı bulunamadı');
+        }
+        
+        const kojenEnerjiPageHeader = document.querySelector('#kojen-enerji-page .page-header h1');
+        if (kojenEnerjiPageHeader) {
+            console.log('✅ Sayfa başlığı korundu: "Kojen Enerji Verileri"');
+        } else {
+            console.log('❌ Kojen Enerji sayfa başlığı bulunamadı');
+        }
     },
     
     /**

@@ -55,7 +55,10 @@ const DailyEnergy = {
         const day = String(now.getDate()).padStart(2, '0');
         const dateStr = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
         
-        this.currentData.date = dateStr;
+        // API için ISO formatına çevir (YYYY-MM-DD)
+        const apiDateStr = `${year}-${month}-${day}`; // ISO formatı: YYYY-MM-DD
+        
+        this.currentData.date = apiDateStr; // ISO formatını kullan
         
         // Badge'i güncelle
         const dateBadge = document.getElementById('daily-date-badge');
@@ -65,6 +68,7 @@ const DailyEnergy = {
         }
         
         console.log('📅 Tarih ayarlandı:', dateStr);
+        console.log('📅 API için tarih (ISO):', apiDateStr);
         console.log('📅 Saat dilimi:', now.toString());
         console.log('📅 UTC zamanı:', now.toISOString());
         console.log('📅 Yerel zaman:', now.toLocaleString('tr-TR'));
@@ -260,13 +264,78 @@ const DailyEnergy = {
             return;
         }
         
-        // Durumu güncelle
-        this.updateStatus('kaydediliyor');
-        
-        // API'ye gönder
-        this.sendToAPI(formData);
+        // Aynı tarihte kayıt var mı kontrol et
+        this.checkExistingRecord(formData.date)
+            .then(exists => {
+                if (exists) {
+                    // Kayıt varsa uyarı ver ve kaydetme
+                    if (Utils && Utils.showToast) {
+                        Utils.showToast(`⚠️ ${formData.date} tarihinde kayıt zaten var!`, 'warning');
+                    }
+                    this.updateStatus('kayıt mevcut');
+                    return;
+                }
+                
+                // Kayıt yoksa devam et
+                this.updateStatus('kaydediliyor');
+                this.sendToAPI(formData);
+            })
+            .catch(error => {
+                console.error('❌ Kayıt kontrolü hatası:', error);
+                this.updateStatus('hata');
+                if (Utils && Utils.showToast) {
+                    Utils.showToast('❌ Kayıt kontrolü sırasında hata oluştu', 'error');
+                }
+            });
     },
     
+    /**
+     * Aynı tarihte kayıt var mı kontrol et
+     */
+    checkExistingRecord: function(date) {
+        return new Promise((resolve, reject) => {
+            if (!this.apiUrl) {
+                reject(new Error('API URL bulunamadı'));
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'get');
+            formData.append('module', 'daily-energy');
+            formData.append('date', date);
+            
+            console.log('🔍 Kayıt kontrolü:', date);
+            
+            fetch(this.apiUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📥 Kayıt kontrolü yanıtı:', data);
+                
+                if (data.success && data.data) {
+                    // Kayıt var mı kontrol et
+                    const hasData = Object.keys(data.data).some(key => {
+                        const value = data.data[key];
+                        return value && value !== '0' && value !== 0;
+                    });
+                    
+                    console.log('🔍 Kayıt durumu:', hasData ? 'var' : 'yok');
+                    resolve(hasData);
+                } else {
+                    // Kayıt yok
+                    console.log('🔍 Kayıt bulunamadı');
+                    resolve(false);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Kayıt kontrolü hatası:', error);
+                reject(error);
+            });
+        });
+    },
+
     /**
      * Form verilerini al
      */
@@ -397,22 +466,24 @@ const DailyEnergy = {
         
         const statusConfig = {
             'bekliyor': { text: 'Bekliyor', class: 'status-waiting' },
-            'güncel': { text: 'Güncel', class: 'status-current' },
             'yeni': { text: 'Yeni Kayıt', class: 'status-new' },
+            'güncel': { text: 'Güncel Kayıt', class: 'status-current' },
             'değişiyor': { text: 'Değişiyor', class: 'status-changing' },
             'kaydediliyor': { text: 'Kaydediliyor...', class: 'status-saving' },
             'kaydedildi': { text: 'Kaydedildi', class: 'status-saved' },
-            'çevrimdışı': { text: 'Çevrimdışı', class: 'status-offline' },
-            'hata': { text: 'Hata', class: 'status-error' }
+            'kayıt mevcut': { text: 'Kayıt Mevcut', class: 'status-exists' },
+            'hata': { text: 'Hata', class: 'status-error' },
+            'çevrimdışı': { text: 'Çevrimdışı', class: 'status-offline' }
         };
         
         const config = statusConfig[status] || statusConfig['bekliyor'];
         
         statusBadge.textContent = config.text;
-        statusBadge.className = 'status-badge ' + config.class;
+        statusBadge.className = `status-badge ${config.class}`;
         
-        console.log('📊 Durum güncellendi:', status);
-    }
+        // Input durumlarını güncelle
+        this.updateInputStates(status);
+    },
 };
 
 // Global erişim

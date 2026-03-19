@@ -17,8 +17,8 @@ const DailyEnergyAPI = {
      */
     init: function() {
         // Config'den URL'i al
-        if (window.CONFIG && CONFIG.googleAppsScript && CONFIG.googleAppsScript.dailyEnergyUrl) {
-            this.apiUrl = CONFIG.googleAppsScript.dailyEnergyUrl;
+        if (window.CONFIG && CONFIG.GOOGLE_SHEETS_WEB_APP_URLS && CONFIG.GOOGLE_SHEETS_WEB_APP_URLS.gunluk_enerji) {
+            this.apiUrl = CONFIG.GOOGLE_SHEETS_WEB_APP_URLS.gunluk_enerji;
         }
         
         // API durumunu kontrol et

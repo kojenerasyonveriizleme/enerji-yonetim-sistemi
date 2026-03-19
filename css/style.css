@@ -1245,6 +1245,201 @@ transform: translateX(-100%);
     border-color: rgba(255, 255, 255, 0.6);
 }
 
+/* Günlük Enerji Verileri - Modern Form Tasarımı */
+#gunluk-enerji-page .hourly-energy-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#gunluk-enerji-page .input-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        0 8px 20px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+#gunluk-enerji-page .input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid linear-gradient(90deg, #e2e8f0, #cbd5e1);
+}
+
+#gunluk-enerji-page .input-header h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#gunluk-enerji-page .status-badge {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+#gunluk-enerji-page #daily-energy-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+#gunluk-enerji-page .input-group {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.03),
+        0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#gunluk-enerji-page .input-group:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    border-color: #cbd5e1;
+}
+
+#gunluk-enerji-page .input-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 12px;
+}
+
+#gunluk-enerji-page .input-icon {
+    font-size: 18px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 8px;
+}
+
+#gunluk-enerji-page .unit-badge {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+#gunluk-enerji-page .input-note {
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+#gunluk-enerji-page .modern-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #1e293b;
+    background: #fafbfc;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+#gunluk-enerji-page .modern-input:hover {
+    border-color: #cbd5e1;
+    background: white;
+}
+
+#gunluk-enerji-page .modern-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+#gunluk-enerji-page .modern-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+#gunluk-enerji-page .input-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+#gunluk-enerji-page .action-btn.save-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+}
+
+#gunluk-enerji-page .action-btn.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+}
+
+#gunluk-enerji-page .action-btn.save-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+    #gunluk-enerji-page .input-card {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    #gunluk-enerji-page #daily-energy-form {
+        grid-template-columns: 1fr;
+    }
+    
+    #gunluk-enerji-page .input-header h3 {
+        font-size: 20px;
+    }
+    
+    #gunluk-enerji-page .input-group {
+        padding: 16px;
+    }
+}
+
 /* Vardiya Takibi sayfasındaki başlık renkleri */
 
 #vardiya-page .animated-logo .main-title,

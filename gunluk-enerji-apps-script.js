@@ -95,7 +95,7 @@ function getOrCreateSheet() {
 }
 
 /**
- * Tarih formatını normalize et
+ * Tarih formatını normalize et (DD/MM/YYYY, DD.MM.YYYY, YYYY-MM-DD, ISO formatları destekler)
  */
 function normalizeDate(dateInput) {
   if (!dateInput) return null;
@@ -107,10 +107,40 @@ function normalizeDate(dateInput) {
     return year + '-' + month + '-' + day;
   }
   
-  const str = dateInput.toString();
+  const str = dateInput.toString().trim();
+  
+  // ISO format (YYYY-MM-DD veya YYYY-MM-DDT...)
   if (str.indexOf('T') !== -1) {
     return str.split('T')[0];
   }
+  
+  // DD/MM/YYYY formatı (Türkçe format)
+  if (str.indexOf('/') !== -1 && str.length === 10) {
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return year + '-' + month + '-' + day;
+    }
+  }
+  
+  // DD.MM.YYYY formatı (Türkçe format)
+  if (str.indexOf('.') !== -1 && str.length === 10) {
+    const parts = str.split('.');
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return year + '-' + month + '-' + day;
+    }
+  }
+  
+  // Zaten YYYY-MM-DD formatında ise
+  if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return str;
+  }
+  
   return str;
 }
 
