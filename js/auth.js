@@ -421,7 +421,11 @@ const Auth = {
             'user-info-gunluk', 
             'user-info-vardiya',
             'user-info-buhar',
-            'user-info-kojen-motor'
+            'user-info-kojen-motor',
+            'user-info-kojen-enerji',
+            'user-info-bakim',
+            'user-info-ariza',
+            'user-info-raporlar'
         ];
         
         userInfoElements.forEach(elementId => {

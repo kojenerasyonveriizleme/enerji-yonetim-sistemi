@@ -1365,6 +1365,13 @@ transform: translateX(-100%);
 }
 
 /* Kojen Enerji Verileri sayfasındaki başlık renkleri */
+#kojen-enerji-page .page-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+    color: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
+}
+
 #kojen-enerji-page .animated-logo .main-title,
 #kojen-enerji-page .animated-logo .sub-title {
     color: white !important;
@@ -1381,6 +1388,60 @@ transform: translateX(-100%);
 
 #kojen-enerji-page .icon-pulse {
     border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Kojen Enerji kontrol paneli - Açık sıcak renk */
+#kojen-enerji-page .motor-control-panel {
+    background: linear-gradient(135deg, #f0a568 0%, #6d3b03 50%, #fcd34d 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+#kojen-enerji-page .motor-control-panel .control-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+#kojen-enerji-page .motor-control-panel label {
+    color: #92400e;
+    font-weight: 600;
+}
+
+#kojen-enerji-page .motor-control-panel .motor-btn {
+    background: white;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    transition: all 0.3s ease;
+}
+
+#kojen-enerji-page .motor-control-panel .motor-btn:hover,
+#kojen-enerji-page .motor-control-panel .motor-btn.active {
+    background: #f59e0b;
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+#kojen-enerji-page .motor-control-panel .vardiya-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+#kojen-enerji-page .motor-control-panel #kojen-enerji-date {
+    color: #000000 !important;
+    background: white;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 500;
 }
 
 /* Dashboard sayfasındaki animasyonlu logo renkleri */
@@ -2861,4 +2922,42 @@ html[data-theme="dark"] #dashboard-page::before {
 
 #gunluk-enerji-page .action-btn.save-btn.disabled:active {
     transform: none;
+}
+
+/* Bakım Takibi, Arıza Kayıtları ve Raporlar sayfalarındaki başlık renkleri */
+#bakim-page .page-header,
+#ariza-page .page-header,
+#raporlar-page .page-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+    color: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
+}
+
+#bakim-page .animated-logo .main-title,
+#bakim-page .animated-logo .sub-title,
+#ariza-page .animated-logo .main-title,
+#ariza-page .animated-logo .sub-title,
+#raporlar-page .animated-logo .main-title,
+#raporlar-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#bakim-page .animated-logo .company-name,
+#ariza-page .animated-logo .company-name,
+#raporlar-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#bakim-page .logo-icon,
+#ariza-page .logo-icon,
+#raporlar-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#bakim-page .icon-pulse,
+#ariza-page .icon-pulse,
+#raporlar-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
 }
