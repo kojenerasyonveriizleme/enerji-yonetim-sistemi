@@ -1,47 +1,7 @@
 /* ===== MODERN INPUT TASARIMI ===== */
 
-/* Saatlik Sayfası Header Stili */
-#saatlik-page .page-header {
-    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-    color: white;
-    padding: 18px 20px;
-    text-align: center;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 1px 6px rgba(59, 130, 246, 0.15);
-    margin-bottom: 20px;
-}
-
-.header-content {
-    text-align: center;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-#saatlik-page .page-header h1 {
-    font-size: 1.3rem;
-    font-weight: 500;
-    margin: 0;
-    line-height: 1.4;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    letter-spacing: 0.3px;
-}
-
-#saatlik-page .page-header h1 span {
-    display: block;
-    margin: 4px 0;
-    font-size: 0.85rem;
-    opacity: 0.95;
-}
-
 /* Icon animasyonu */
-#saatlik-page .page-header h1::before {
-    content: '⚡';
-    display: inline-block;
-    margin-right: 4px;
-    animation: pulse 2s infinite;
-    font-size: 1.2rem;
-    vertical-align: middle;
-}
+/* All page-header styles are now centralized in style.css */
 
 @keyframes pulse {
     0%, 100% { transform: scale(1); }

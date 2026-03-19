@@ -150,6 +150,6 @@ html[data-theme="dark"] {
     }
     
     #dashboard-page .page-header {
-        background: var(--card-bg) !important;
+        background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%) !important;
     }
 }

@@ -36,19 +36,8 @@ html[data-theme="dark"] #dashboard-page::before {
         radial-gradient(circle at 80% 80%, rgba(14,165,233,.08), transparent 55%);
 }
 
-/* Dashboard Header */
-#dashboard-page .page-header {
-    background: var(--header-gradient);
-    color: white;
-    border-radius: 24px;
-    box-shadow: var(--accent-glow);
-}
-
-#dashboard-page .page-header h1,
-#dashboard-page .page-header h2,
-#dashboard-page .page-header p {
-    color: white !important;
-}
+/* Dashboard Header - Moved to style.css */
+/* All page-header styles are now centralized in style.css */
 
 /* Dashboard Cards */
 #dashboard-page .stat-card,

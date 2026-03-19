@@ -599,59 +599,217 @@ transform: translateX(-100%);
 
 .sidebar-nav {
     flex: 1;
-    padding: 16px 12px;
+    padding: 0;
     overflow-y: auto;
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
 }
 
+/* Alternatif Navigation Design - Card Style */
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 16px 24px;
+    gap: 16px;
+    padding: 0;
+    margin: 8px 16px;
     color: var(--text-secondary);
     text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 12px;
-    margin: 4px 12px;
+    font-weight: 500;
+    font-size: 14px;
     position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     overflow: hidden;
+    backdrop-filter: blur(20px);
+    height: 56px;
 }
 
+/* Card Hover Effect */
 .nav-item::before {
     content: '';
     position: absolute;
-    left: 0;
     top: 0;
+    left: -100%;
+    width: 100%;
     height: 100%;
-    width: 4px;
-    background: linear-gradient(180deg, var(--primary-color), var(--info-color));
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
-    border-radius: 0 4px 4px 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-color), #6366f1);
+    opacity: 0;
+    transition: all 0.4s ease;
+    border-radius: 16px;
 }
 
 .nav-item:hover {
-    background: var(--bg-tertiary);
-    color: var(--primary-color);
-    transform: translateX(8px);
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(29, 78, 216, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(29, 78, 216, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .nav-item:hover::before {
-    transform: scaleY(1);
+    left: 100%;
 }
 
-.nav-item.active {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+.nav-item:hover::after {
+    opacity: 1;
+}
+
+.nav-item:hover .nav-icon {
+    transform: scale(1.2) rotate(-10deg);
+    filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
+}
+
+.nav-item:hover span:not(.nav-icon) {
     color: white;
-    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+    transform: translateX(4px);
 }
 
-.nav-item.active::before {
-    transform: scaleY(1);
-    background: rgba(255, 255, 255, 0.3);
+/* Active State - Glass Card */
+.nav-item.active {
+    background: linear-gradient(135deg, rgba(29, 78, 216, 0.15), rgba(99, 102, 241, 0.1));
+    border: 1px solid rgba(29, 78, 216, 0.3);
+    color: white;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 
+        0 12px 40px rgba(29, 78, 216, 0.25),
+        0 6px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.nav-item.active::after {
+    opacity: 0.8;
+}
+
+.nav-item.active .nav-icon {
+    transform: scale(1.3) rotate(-15deg);
+    filter: drop-shadow(0 6px 16px rgba(29, 78, 216, 0.6));
+}
+
+.nav-item.active span:not(.nav-icon) {
+    color: white;
+    font-weight: 600;
+}
+
+/* Icon Container */
 .nav-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-left: 8px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.nav-icon::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nav-item:hover .nav-icon::before {
+    opacity: 1;
+}
+
+.nav-item.active .nav-icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+}
+
+/* Text Container */
+.nav-item span:not(.nav-icon) {
+    flex: 1;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+/* Admin Only - Red Glass Card */
+.nav-item.nav-admin-only {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.nav-item.nav-admin-only::after {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.nav-item.nav-admin-only .nav-icon {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.nav-item.nav-admin-only:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 
+        0 8px 32px rgba(239, 68, 68, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item.nav-admin-only.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 
+        0 12px 40px rgba(239, 68, 68, 0.3),
+        0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Navigation Separator */
+.nav-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    margin: 16px 24px;
+    opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-item {
+        margin: 6px 12px;
+        height: 48px;
+        gap: 12px;
+    }
+    
+    .nav-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+        margin-left: 6px;
+    }
+    
+    .nav-item:hover {
+        transform: translateY(-1px) scale(1.01);
+    }
+    
+    .nav-item.active {
+        transform: translateY(-2px) scale(1.02);
+    }
 }
 
 .sidebar-footer {
@@ -739,8 +897,11 @@ transform: translateX(-100%);
 }
 
 /* Dashboard page header specific styling */
-#dashboard-page .page-header {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+#dashboard-page .page-header,
+#saatlik-page .page-header,
+#gunluk-enerji-page .page-header,
+#vardiya-page .page-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
     color: white;
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
@@ -748,7 +909,16 @@ transform: translateX(-100%);
 
 #dashboard-page .page-header h1,
 #dashboard-page .page-header h2,
-#dashboard-page .page-header p {
+#dashboard-page .page-header p,
+#saatlik-page .page-header h1,
+#saatlik-page .page-header h2,
+#saatlik-page .page-header p,
+#gunluk-enerji-page .page-header h1,
+#gunluk-enerji-page .page-header h2,
+#gunluk-enerji-page .page-header p,
+#vardiya-page .page-header h1,
+#vardiya-page .page-header h2,
+#vardiya-page .page-header p {
     color: white !important;
 }
 
@@ -759,11 +929,6 @@ transform: translateX(-100%);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#vardiya-page .page-header h1,
-#vardiya-page .page-header p {
-    color: white !important;
 }
 
 @keyframes gradient-shift {
@@ -1055,11 +1220,171 @@ transform: translateX(-100%);
 }
 
 /* Saatlik sayfasındaki şimşek ikonunu sabitle */
+
 #saatlik-page .icon-industry {
     animation: none !important;
 }
 
+/* Günlük Enerji sayfasındaki başlık renkleri */
+
+#gunluk-enerji-page .animated-logo .main-title,
+#gunluk-enerji-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#gunluk-enerji-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#gunluk-enerji-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#gunluk-enerji-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Vardiya Takibi sayfasındaki başlık renkleri */
+
+#vardiya-page .animated-logo .main-title,
+#vardiya-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#vardiya-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#vardiya-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#vardiya-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Buhar Verileri sayfasındaki başlık renkleri */
+#buhar-page .animated-logo .main-title,
+#buhar-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#buhar-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#buhar-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#buhar-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Kojen Motor Verileri sayfasındaki başlık renkleri */
+#kojen-motor-page .page-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+    color: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
+}
+
+#kojen-motor-page .animated-logo .main-title,
+#kojen-motor-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#kojen-motor-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#kojen-motor-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#kojen-motor-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Kojen Motor kontrol paneli - Açık sıcak renk */
+#kojen-motor-page .motor-control-panel {
+    background: linear-gradient(135deg, #eec935 0%, #fde68a 50%, #fcd34d 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+#kojen-motor-page .motor-control-panel .control-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+#kojen-motor-page .motor-control-panel label {
+    color: #92400e;
+    font-weight: 600;
+}
+
+#kojen-motor-page .motor-control-panel .motor-btn {
+    background: white;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    transition: all 0.3s ease;
+}
+
+#kojen-motor-page .motor-control-panel .motor-btn:hover,
+#kojen-motor-page .motor-control-panel .motor-btn.active {
+    background: #f59e0b;
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+#kojen-motor-page .motor-control-panel .vardiya-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+#kojen-motor-page .motor-control-panel #kojen-motor-date {
+    color: #000000 !important;
+    background: white;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+/* Kojen Enerji Verileri sayfasındaki başlık renkleri */
+#kojen-enerji-page .animated-logo .main-title,
+#kojen-enerji-page .animated-logo .sub-title {
+    color: white !important;
+}
+
+#kojen-enerji-page .animated-logo .company-name {
+    color: white !important;
+}
+
+#kojen-enerji-page .logo-icon {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+#kojen-enerji-page .icon-pulse {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
 /* Dashboard sayfasındaki animasyonlu logo renkleri */
+
 #dashboard-page .animated-logo .main-title,
 #dashboard-page .animated-logo .sub-title {
     color: white !important;
@@ -2421,20 +2746,6 @@ html[data-theme="dark"] #dashboard-page::before {
     transform: translateY(-10px) scale(1.03);
 }
 
-/* Dashboard header */
-#dashboard-page .page-header {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
-    color: white;
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
-}
-
-#dashboard-page .page-header h1,
-#dashboard-page .page-header h2,
-#dashboard-page .page-header p {
-    color: white !important;
-}
-
 /* Admin only navigation item */
 .nav-admin-only {
     border: 2px dashed #f59e0b;
@@ -2452,14 +2763,13 @@ html[data-theme="dark"] #dashboard-page::before {
 
 /* ===== GÜNLÜK ENERJİ SAYFASI ÖZEL BAŞLIK STİLLERİ ===== */
 #gunluk-enerji-page .page-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
     padding: 20px 30px;
-    border-radius: 12px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(29, 78, 216, 0.3);
 }
 
-#gunluk-enerji-page .page-header .header-content h1 {
+.page-header .header-content h1 {
     color: white;
     text-align: center;
     margin: 0;

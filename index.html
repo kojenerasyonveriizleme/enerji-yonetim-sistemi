@@ -475,12 +475,50 @@
             <!-- Günlük Enerji Verileri Page -->
             <section id="gunluk-enerji-page" class="page">
                 <header class="page-header">
-                    <div class="header-content">
-                        <h1>
-                            <span class="main-title">🏭 KORUMA KLOR ŞİRKETLER GRUBU DENİZLİ TESİSİ</span>
-                            <span>⚙️ KOJENERASYON BÖLÜMÜ</span>
-                            <span>📊 GÜNLÜK ENERJİ VERİLERİ</span>
-                        </h1>
+                    <div class="header-left">
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d-gunluk">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                                <h1 class="main-title fade-in">
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">📊</span>
+                                        GÜNLÜK ENERJİ VERİLERİ
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-center">
+                        <span id="current-date-gunluk"></span>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info-container">
+                            <span id="user-info-gunluk" class="user-info"></span>
+                        </div>
+                        <button class="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle-gunluk" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
                     </div>
                 </header>
                 
@@ -679,26 +717,53 @@
             
             <!-- Vardiya Takibi Page -->
             <section id="vardiya-page" class="page">
-                <div class="page-header">
+                <header class="page-header">
                     <div class="header-left">
-                        <div class="main-logo">
-                            <h1>⏰ Vardiya Takibi</h1>
-                            <p>Vardiya kayıtlarınızı güvenle saklayın</p>
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d-vardiya">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                                <h1 class="main-title fade-in">
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">🕐</span>
+                                        VARDİYA TAKİBİ
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="header-center">
-                        <div class="current-status">
-                            <span class="status-badge active" id="current-vardiya-status">
-                                ● Aktif Vardiya: <span id="current-shift-name">Yükleniyor...</span>
-                            </span>
-                        </div>
+                        <span id="current-date-vardiya"></span>
                     </div>
                     <div class="header-right">
-                        <div class="header-actions">
-                            <div id="user-info">Kullanıcı: <span id="username">Admin</span></div>
+                        <div class="user-info-container">
+                            <span id="user-info-vardiya" class="user-info"></span>
                         </div>
+                        <button class="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle-vardiya" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
                     </div>
-                </div>
+                </header>
 
                 <div class="content-grid">
                     <!-- Sol Panel - Vardiya Formu -->
@@ -873,36 +938,76 @@
 
             <!-- Kojen Motor Verileri Page -->
             <section id="kojen-motor-page" class="page">
-                <header class="page-header kojen-motor-header">
-                    <div class="header-content">
-                        <div class="header-left">
-                            <div class="page-title">
-                                <h1>⚙️ Kojen Motor Verileri</h1>
-                                <div class="motor-selection">
-                                    <label>Motor:</label>
-                                    <div class="motor-buttons">
-                                        <button type="button" class="motor-btn active" data-motor="motor-1">GM-1</button>
-                                        <button type="button" class="motor-btn" data-motor="motor-2">GM-2</button>
-                                        <button type="button" class="motor-btn" data-motor="motor-3">GM-3</button>
-                                    </div>
-                                </div>
-                                <div class="vardiya-info">
-                                    <div class="vardiya-badge" id="active-vardiya">
-                                        🕐 Vardiya Yükleniyor...
-                                    </div>
+                <header class="page-header">
+                    <div class="header-left">
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d-kojen-motor">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="header-center">
-                            <div class="date-input-group">
-                                <label for="kojen-motor-date">Tarih:</label>
-                                <input type="date" id="kojen-motor-date" name="kojen-motor-date" required>
+                            <div class="logo-text">
+                                <h1 class="main-title fade-in">
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJEN MOTOR VERİLERİ
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="header-right">
                         </div>
                     </div>
+                    <div class="header-center">
+                        <span id="current-date-kojen-motor"></span>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info-container">
+                            <span id="user-info-kojen-motor" class="user-info"></span>
+                        </div>
+                        <button class="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle-kojen-motor" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
+                    </div>
                 </header>
+                
+                <!-- Motor Kontrol Paneli -->
+                <div class="motor-control-panel">
+                    <div class="control-row">
+                        <div class="motor-selection">
+                            <label>Motor:</label>
+                            <div class="motor-buttons">
+                                <button type="button" class="motor-btn active" data-motor="motor-1">GM-1</button>
+                                <button type="button" class="motor-btn" data-motor="motor-2">GM-2</button>
+                                <button type="button" class="motor-btn" data-motor="motor-3">GM-3</button>
+                            </div>
+                        </div>
+                        <div class="date-input-group">
+                            <label for="kojen-motor-date">Tarih:</label>
+                            <input type="date" id="kojen-motor-date" name="kojen-motor-date" required>
+                        </div>
+                        <div class="vardiya-info">
+                            <div class="vardiya-badge" id="active-vardiya">
+                                🕐 Vardiya Yükleniyor...
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="content-grid">
                     <div class="form-section">
                         <div class="kojen-table-container">
@@ -1241,7 +1346,51 @@
             <!-- Buhar Verileri Page -->
             <section id="buhar-page" class="page">
                 <header class="page-header">
-                    <h1>💨 Buhar Verileri</h1>
+                    <div class="header-left">
+                        <div class="main-logo animated-logo">
+                            <div class="logo-icon-container">
+                                <div class="logo-icon" id="logo-3d-buhar">
+                                    <span class="icon-industry">🏭</span>
+                                    <div class="icon-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                                <h1 class="main-title fade-in">
+                                    <span class="company-name">KORUMA KLOR VE ALKALİ ŞİRKETLER GRUBU</span>
+                                </h1>
+                                <h2 class="sub-title slide-in">
+                                    <span class="location-icon">📍</span>
+                                    DENİZLİ TESİSİ
+                                </h2>
+                                <div class="department-badges">
+                                    <span class="badge animated-badge system">
+                                        <span class="badge-icon">⚙️</span>
+                                        KOJENERASYON BÖLÜMÜ
+                                    </span>
+                                    <span class="badge animated-badge energy">
+                                        <span class="badge-icon">�</span>
+                                        BUHAR VERİLERİ
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-center">
+                        <span id="current-date-buhar"></span>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info-container">
+                            <span id="user-info-buhar" class="user-info"></span>
+                        </div>
+                        <button class="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
+                            <span class="refresh-icon">🔄</span>
+                            <span class="refresh-text">Yenile</span>
+                        </button>
+                        <button class="theme-toggle" id="theme-toggle-buhar" aria-label="Tema değiştir">
+                            <span class="theme-toggle-icon">🌙</span>
+                            <span class="theme-toggle-text">Tema</span>
+                        </button>
+                    </div>
                 </header>
                 <div class="content-grid">
                     <div class="form-section">
@@ -1367,13 +1516,12 @@
     
     // ===== 3D LOGO INTERAKTİF EFEKTLER =====
     (() => {
-        // Dashboard logosu
-        const logo3d = document.getElementById('logo-3d');
-        // Saatlik sayfası logosu
-        const logo3dSaatlik = document.getElementById('logo-3d-saatlik');
+        // Tüm logoları bul
+        const logoIds = ['logo-3d', 'logo-3d-saatlik', 'logo-3d-gunluk', 'logo-3d-vardiya', 'logo-3d-buhar', 'logo-3d-kojen-motor'];
+        const logos = logoIds.map(id => document.getElementById(id)).filter(Boolean);
         
-        // Her iki logo için de aynı efektleri uygula
-        [logo3d, logo3dSaatlik].forEach(logo => {
+        // Her logo için aynı efektleri uygula
+        logos.forEach(logo => {
             if (!logo) return;
             
             let mouseX = 0;
@@ -1485,3 +1633,4 @@
     </script>
 </body>
 </html>
+

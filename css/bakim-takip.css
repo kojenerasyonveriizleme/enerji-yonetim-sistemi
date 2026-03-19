@@ -9,17 +9,8 @@
     overflow-y: auto;
 }
 
-/* Page Header */
-#bakim-page .page-header {
-    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
+/* Page Header - Moved to style.css */
+/* All page-header styles are now centralized in style.css */
 
 /* Admin Badge */
 .admin-badge {
