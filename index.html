@@ -1233,9 +1233,16 @@
                                         <span class="stat-label">Tamamlanan</span>
                                     </div>
                                 </div>
+                                <!-- Devam Eden Bakımlar Listesi -->
+                                <div class="ongoing-maintenance">
+                                    <h4>Devam Eden Bakımlar</h4>
+                                    <div id="periodik-ongoing-list" class="maintenance-list">
+                                        <div class="loading-text">Yükleniyor...</div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-footer">
-                                <button class="btn-maintenance btn-periodik" onclick="BakimTakibi.openPeriodik()">
+                                <button type="button" class="btn-maintenance btn-periodik" onclick="BakimTakibi.openPeriodik()">
                                     <span class="btn-icon">📅</span>
                                     <span>Yönet</span>
                                 </button>
@@ -1265,9 +1272,16 @@
                                         <span class="stat-label">Bekleyen</span>
                                     </div>
                                 </div>
+                                <!-- Devam Eden Bakımlar Listesi -->
+                                <div class="ongoing-maintenance">
+                                    <h4>Devam Eden Bakımlar</h4>
+                                    <div id="normal-ongoing-list" class="maintenance-list">
+                                        <div class="loading-text">Yükleniyor...</div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-footer">
-                                <button class="btn-maintenance btn-normal" onclick="BakimTakibi.openNormal()">
+                                <button type="button" class="btn-maintenance btn-normal" onclick="BakimTakibi.openNormal()">
                                     <span class="btn-icon">🔧</span>
                                     <span>Yönet</span>
                                 </button>
@@ -1297,9 +1311,16 @@
                                         <span class="stat-label">Çözülen</span>
                                     </div>
                                 </div>
+                                <!-- Devam Eden Bakımlar Listesi -->
+                                <div class="ongoing-maintenance">
+                                    <h4>Devam Eden Arızalar</h4>
+                                    <div id="ariza-ongoing-list" class="maintenance-list">
+                                        <div class="loading-text">Yükleniyor...</div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-footer">
-                                <button class="btn-maintenance btn-ariza" onclick="BakimTakibi.openAriza()">
+                                <button type="button" class="btn-maintenance btn-ariza" onclick="BakimTakibi.openAriza()">
                                     <span class="btn-icon">🚨</span>
                                     <span>Yönet</span>
                                 </button>
@@ -1313,7 +1334,7 @@
                             <span class="lock-icon">🔒</span>
                             <h3>Yetki Gerekiyor</h3>
                             <p>Bu sayfaya sadece admin seviyesindeki kullanıcılar erişebilir.</p>
-                            <button class="btn-admin-login" onclick="BakimTakibi.checkAdmin()">
+                            <button type="button" class="btn-admin-login" onclick="BakimTakibi.checkAdmin()">
                                 <span class="btn-icon">🔑</span>
                                 <span>Admin Girişi</span>
                             </button>

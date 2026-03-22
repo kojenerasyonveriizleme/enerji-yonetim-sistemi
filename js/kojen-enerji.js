@@ -29,6 +29,30 @@ const KojenEnerji = {
     },
 
     /**
+     * Aktif vardiya bilgisini al
+     */
+    getAktifVardiya: function() {
+        const now = new Date();
+        const hour = now.getHours();
+        
+        // Vardiya sınırları
+        const VARDIYA_SINIRLARI = {
+            gunduz: { baslangic: 8, bitis: 16 },
+            gece: { baslangic: 16, bitis: 24 },
+            gece2: { baslangic: 0, bitis: 8 }
+        };
+        
+        // Saate göre vardiya belirle
+        if (hour >= VARDIYA_SINIRLARI.gunduz.baslangic && hour < VARDIYA_SINIRLARI.gunduz.bitis) {
+            return 'Gündüz Vardiyası';
+        } else if (hour >= VARDIYA_SINIRLARI.gece.baslangic && hour < VARDIYA_SINIRLARI.gece.bitis) {
+            return 'Gece Vardiyası';
+        } else {
+            return 'Gece Vardiyası (2)';
+        }
+    },
+
+    /**
      * Mevcut kayıtları kontrol et ve inputları kilitle
      */
     checkExistingRecords: function() {

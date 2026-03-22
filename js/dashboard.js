@@ -121,11 +121,28 @@ const Dashboard = {
         const el = document.getElementById('pending-maintenance');
         if (!el) return;
 
-        // LocalStorage'dan bakım verilerini çek
-        const bakimData = Utils.loadFromStorage(CONFIG.STORAGE_KEYS.BAKIM_DATA, []);
-        const pending = bakimData.filter(b => b.durum === 'planlandi' || b.durum === 'devam').length;
-        
-        el.textContent = pending > 0 ? `${pending} adet` : 'Yok';
+        // Google Sheets'ten bakım verilerini çek
+        if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
+            GoogleSheetsAPI.getData('bakim', { 
+                action: 'get_pending'
+            })
+            .then(result => {
+                if (result.success && result.data) {
+                    const pendingCount = result.pendingCount || result.data.length;
+                    el.textContent = pendingCount > 0 ? `${pendingCount} adet` : 'Yok';
+                } else {
+                    el.textContent = 'Hata';
+                    console.error('Bakım verileri alınamadı:', result.error);
+                }
+            })
+            .catch(error => {
+                console.error('Bakım verileri çekme hatası:', error);
+                el.textContent = 'Hata';
+            });
+        } else {
+            // Demo modunda simülasyon
+            el.textContent = 'Demo';
+        }
     },
 
     /**
