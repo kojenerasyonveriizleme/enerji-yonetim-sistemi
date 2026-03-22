@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/vardiya.css">
     <link rel="stylesheet" href="css/bakim-takip.css">
     <link rel="stylesheet" href="css/records.css">
+    <link rel="stylesheet" href="css/kojen-enerji.css">
     
     <!-- 3. EN SON: Sayfa özel stilleri (en yüksek öncelik) -->
     <link rel="stylesheet" href="css/kojen-motor.css">
@@ -185,7 +186,7 @@
                     </div>
                     <div class="header-right">
                         <span id="user-info"></span>
-                        <button class="refresh-btn" id="refresh-btn" onclick="Dashboard.refreshFromAPI()" aria-label="Verileri yenile" title="Verileri yenile">
+                        <button class="refresh-btn" id="refresh-btn" onclick="location.reload()" aria-label="Verileri yenile" title="Verileri yenile">
                             <span class="refresh-icon">🔄</span>
                             <span class="refresh-text">Yenile</span>
                         </button>
@@ -1144,8 +1145,9 @@
                         
                         <!-- Kaydet ve Temizle Butonları -->
                         <div class="kojen-actions">
-                            <button id="save-kojen-enerji-btn" class="btn-primary">💾 Kaydet</button>
-                            <button id="clear-kojen-enerji-btn" class="btn-secondary">🔄 Temizle</button>
+                            <button type="button" id="save-kojen-enerji-btn" class="btn-primary">💾 Kaydet</button>
+                            <button type="button" id="motor-devre-disi-enerji-btn" class="btn-warning">🔴 Motor Devre Dışı Kaydet</button>
+                            <button type="button" id="clear-kojen-enerji-btn" class="btn-secondary">🔄 Temizle</button>
                         </div>
                     </div>
                 </div>
@@ -1665,7 +1667,7 @@
     <script src="js/enerji.js"></script>
     <script src="js/vardiya.js"></script>
     <script src="js/kojen-motor.js"></script>
-    <!-- kojen-enerji.js dosyası mevcut değil, kaldırıldı -->
+    <script src="js/kojen-enerji.js"></script>
     <script src="js/bakim-takip.js"></script>
     <script src="js/bakim.js"></script>
     <script src="js/ariza.js"></script>

@@ -260,6 +260,26 @@ const BuharVerileri = {
      * Tarihi normalize et (güvenli parsing - locale bağımsız - UTC sorunu yok)
      */
     normalizeDate: function(dateValue) {
+        if (!dateValue) return '';
+        
+        // Eğer zaten YYYY-MM-DD formatındaysa olduğu gibi kullan
+        if (dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateValue;
+        }
+        
+        // DD.MM.YYYY formatını YYYY-MM-DD formatına çevir
+        if (dateValue.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+            const [day, month, year] = dateValue.split('.');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        
+        // DD/MM/YYYY formatını YYYY-MM-DD formatına çevir
+        if (dateValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            const [day, month, year] = dateValue.split('/');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        
+        // Diğer formatlar için processDateTime kullan
         return this.processDateTime(dateValue, null, { outputFormat: 'YYYY-MM-DD' });
     },
 
@@ -710,10 +730,18 @@ const BuharVerileri = {
         
         // Bugün için kayıt var mı kontrol et (sadece bilgi amaçlı)
         this.debugLog('Bugün için kayıt kontrolü başlıyor...');
+        
+        // Bugünün bir gün öncesini kontrol et (gece vardiyası mantığı)
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const yesterdayString = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
+        this.debugLog('Kontrol edilecek tarih (bugün - 1):', yesterdayString);
+        
         const todayRecords = this.googleSheetsData.filter(record => {
-            const recordDate = this.normalizeDate(record.date);
-            const isToday = recordDate === todayString;
-            this.debugLog(`Kayıt kontrolü: ${record.date} -> ${recordDate} vs ${todayString} = ${isToday}`);
+            const recordDate = this.normalizeDate(record.Tarih); // 'date' yerine 'Tarih'
+            const isToday = recordDate === yesterdayString; // bugün - 1 gün
+            this.debugLog(`Kayıt kontrolü: ${record.Tarih} -> ${recordDate} vs ${yesterdayString} = ${isToday}`);
             return isToday;
         });
         
@@ -805,15 +833,13 @@ const BuharVerileri = {
             
             // Google Sheets'ten bu tarih için kayıt kontrolü yap
             if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
-                // Seçilen tarihi bir gün geriye al (kaydedilecek tarih)
+                // Seçilen tarihi olduğu gibi kullan (1 gün geri gitme)
                 const selectedDateObj = new Date(selectedDate);
-                const recordDateObj = new Date(selectedDateObj);
-                recordDateObj.setDate(recordDateObj.getDate() - 1);
                 
-                const year = recordDateObj.getFullYear();
-                const month = String(recordDateObj.getMonth() + 1).padStart(2, '0');
-                const day = String(recordDateObj.getDate()).padStart(2, '0');
-                const recordDate = `${day}.${month}.${year}`; // Türkçe format: DD.MM.YYYY
+                const year = selectedDateObj.getFullYear();
+                const month = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(selectedDateObj.getDate()).padStart(2, '0');
+                const recordDate = `${year}-${month}-${day}`; // YYYY-MM-DD formatında
                 
                 // Kontrol için DD/MM/YYYY formatına çevir (API için)
                 const formattedDate = this.processDateTime(recordDate, null, { outputFormat: 'DD/MM/YYYY' });
@@ -837,7 +863,7 @@ const BuharVerileri = {
                     // Gelen kayıtların tarihlerini kontrol et
                     const matchingRecords = result.data.filter(record => {
                         const recordDateFromSheet = this.normalizeDate(record.Tarih); // 'date' yerine 'Tarih'
-                        const isMatch = recordDateFromSheet === recordDate;
+                        const isMatch = recordDateFromSheet === recordDate; // YYYY-MM-DD formatında karşılaştır
                         this.debugLog(`Kayıt eşleşme kontrolü: ${record.Tarih} -> ${recordDateFromSheet} vs ${recordDate} = ${isMatch}`);
                         return isMatch;
                     });

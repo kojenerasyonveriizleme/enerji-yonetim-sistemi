@@ -1,6 +1,6 @@
 /**
  * KOJEN ENERJI ICIN GOOGLE SHEETS APP SCRIPT
- * Her motor için ayrı sayfa + kayıt kontrolü + Tam Otomatik Mapping
+ * Her motor için ayrı sayfa + kayıt kontrolü
  * 
  * Kurulum:
  * 1. Bu kodu Apps Script'e yapıştır
@@ -10,31 +10,11 @@
  */
 
 /**
- * Yardımcı: JSON response gönder
+ * Kojen Enerji kayıt kontrolü handler
  */
-function sendResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
+function handleKojenEnerjiCheck(payload, parameters) {
   try {
-    // FormData'dan verileri al
-    const action = e.parameter.action;
-    const module = e.parameter.module;
-    
-    // Veri objesini oluştur
-    const payload = {};
-    Object.keys(e.parameter).forEach(key => {
-      if (!['action', 'module', 'timestamp'].includes(key)) {
-        payload[key] = e.parameter[key];
-      }
-    });
-    
-    // Motor ID'sini al
     const motorId = payload.motorId || 'motor-1';
-    
-    // Sheet isimlerini belirle
     const sheetNames = {
       'motor-1': 'GM 1 Enerji Verileri',
       'motor-2': 'GM 2 Enerji Verileri', 
@@ -43,38 +23,236 @@ function doPost(e) {
     
     const sheetName = sheetNames[motorId];
     if (!sheetName) {
-      return sendResponse({ success: false, error: `Geçersiz motor ID: ${motorId}` });
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: `Geçersiz motor ID: ${motorId}`,
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
     }
     
-    Logger.log(`📍 Sheet: ${sheetName}, Motor: ${motorId}, Action: ${action}`);
-    
-    // Spreadsheet'i al
+    // Spreadsheet kontrolü
     let ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Spreadsheet bulunamadı',
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: `Sheet bulunamadı: ${sheetName}`,
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Kayıt kontrolü yap
+    const checkResult = checkKojenEnerjiRecord(sheet, payload);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      exists: checkResult.exists,
+      message: checkResult.exists ? 'Kayıt mevcut' : 'Kayıt bulunamadı',
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Kojen Enerji check hatası: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    // FormData'dan verileri al
+    const action = e.parameter.action;
+    const module = e.parameter.module;
+    const timestamp = e.parameter.timestamp;
+    
+    // Veri objesini oluştur (action, module, timestamp hariç)
+    const payload = {};
+    Object.keys(e.parameter).forEach(key => {
+      if (!['action', 'module', 'timestamp'].includes(key)) {
+        payload[key] = e.parameter[key];
+      }
+    });
+    
+    // Check action'ı - kayıt kontrolü için
+    if (action === 'check' && module === 'kojen_enerji') {
+      // Doğrudan burada işle - handleKojenEnerjiCheck çağırma
+      try {
+        const motorId = payload.motorId || 'motor-1';
+        const sheetNames = {
+          'motor-1': 'GM 1 Enerji Verileri',
+          'motor-2': 'GM 2 Enerji Verileri', 
+          'motor-3': 'GM 3 Enerji Verileri'
+        };
+        
+        const sheetName = sheetNames[motorId];
+        if (!sheetName) {
+          return ContentService.createTextOutput(JSON.stringify({
+            success: false,
+            error: `Geçersiz motor ID: ${motorId}`,
+            timestamp: new Date().toISOString()
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+        
+        // Spreadsheet kontrolü
+        let ss = SpreadsheetApp.getActiveSpreadsheet();
+        if (!ss) {
+          return ContentService.createTextOutput(JSON.stringify({
+            success: false,
+            error: 'Spreadsheet bulunamadı',
+            timestamp: new Date().toISOString()
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+        
+        const sheet = ss.getSheetByName(sheetName);
+        if (!sheet) {
+          return ContentService.createTextOutput(JSON.stringify({
+            success: false,
+            error: `Sheet bulunamadı: ${sheetName}`,
+            timestamp: new Date().toISOString()
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+        
+        // Doğrudan kayıt kontrolü yap
+        const checkResult = checkKojenEnerjiRecord(sheet, payload);
+        
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          exists: checkResult.exists,
+          message: checkResult.exists ? 'Kayıt mevcut' : 'Kayıt bulunamadı',
+          timestamp: new Date().toISOString()
+        })).setMimeType(ContentService.MimeType.JSON);
+        
+      } catch (error) {
+        Logger.log('Doğrudan check hatası: ' + error.toString());
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          error: error.toString(),
+          timestamp: new Date().toISOString()
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    // Motor ID'sini al
+    const motorId = payload.motorId || 'motor-1';
+    
+    // Sheet isimlerini belirle - her motor için ayrı
+    const sheetNames = {
+      'motor-1': 'GM 1 Enerji Verileri',
+      'motor-2': 'GM 2 Enerji Verileri', 
+      'motor-3': 'GM 3 Enerji Verileri'
+    };
+    
+    // ✅ ÇÖZÜM: Motor filtresini kontrol et - doğru sheet'i seç
+    let selectedMotorId = motorId; // Varsayılan
+    if (payload.motor) {
+      selectedMotorId = payload.motor;
+      Logger.log(`Motor filtresi: ${selectedMotorId}`);
+    }
+    
+    const sheetName = sheetNames[selectedMotorId];
+    Logger.log(`Seçilen sheet: ${sheetName} (motor: ${selectedMotorId})`);
+    
+    if (!sheetName) {
+      Logger.log(`Geçersiz motor ID: ${selectedMotorId}`);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: `Geçersiz motor ID: ${selectedMotorId}`,
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Spreadsheet kontrolü - yoksa oluştur
+    let ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      ss = SpreadsheetApp.create('Kojenerasyon Kojen Enerji Verileri');
+    }
+    
     let sheet = ss.getSheetByName(sheetName);
     
     // Sheet yoksa oluştur
     if (!sheet) {
       sheet = createEnerjiSheet(ss, sheetName, motorId);
-      Logger.log(`✅ Yeni sheet oluşturuldu: ${sheetName}`);
     }
     
-    // Header kontrolü - SADECE sheet boşsa
-    if (sheet.getLastRow() === 0) {
+    // HER DURUMDA header kontrolü yap
+    if (module === 'kojen_enerji') {
       ensureEnerjiHeaders(sheet, motorId);
-      Logger.log('✅ Header eklendi');
+    }
+    
+    // Kayıt kontrolü yap
+    const existingRecord = findExistingEnerjiRecord(sheet, payload);
+    if (existingRecord) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: 'Bu tarih, vardiya ve saat için kayıt zaten var',
+        existingRow: existingRecord.row,
+        motorId: motorId
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const headers = [
+      'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+      'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+      'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+      'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+      'Orijinal Personel', 'Değiştirilen Değerler'
+    ];
+    
+    // Spreadsheet kontrolü - yoksa oluştur
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow === 0) {
+      Logger.log('Sheet boş, header ekleniyor...');
+      
+      // Headerları ekle
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.getRange(1, 1, 1, headers.length)
+        .setFontWeight("bold")
+        .setBackground("#f0f0f0");
+      
+      // İlk satırı dondur
+      sheet.setFrozenRows(1);
+      
+      // Kolon genişliklerini ayarla
+      for (let i = 1; i <= headers.length; i++) {
+        sheet.autoResizeColumn(i);
+      }
+      
+      Logger.log('Headerlar eklendi, toplam ' + headers.length + ' kolon');
+    } else {
+      // Sheet doluysa ilk hücreyi kontrol et
+      const firstCell = sheet.getRange(1,1).getValue();
+      if (firstCell !== 'ID') {
+        throw new Error('Sheet dolu ama header bozuk! Manuel kontrol gerekli.');
+      } else {
+        Logger.log('Headerlar zaten mevcut ve doğru');
+      }
     }
     
     let result;
     
-    // Action'a göre işlem yap
     switch (action) {
       case 'save':
-        // ✅ ÇOKLU KAYIT - Tüm saatleri işle
-        result = saveMultipleHours(sheet, payload, ss);
+        result = saveKojenEnerjiRecord(sheet, payload);
+        break;
+        
+      case 'save_bulk':
+        result = saveBulkKojenEnerjiRecords(sheet, payload);
         break;
         
       case 'get':
-        result = getKojenEnerjiRecords(sheet, payload);
+        result = getKojenEnerjiRecords(sheet, payload.filters || {});
         break;
         
       case 'check':
@@ -82,30 +260,79 @@ function doPost(e) {
         break;
         
       case 'update':
-        result = updateKojenEnerjiRecord(sheet, payload.recordId, payload);
+        if (!payload.id) {
+          result = { success: false, error: 'Update için ID gerekli' };
+        } else {
+          result = updateKojenEnerjiRecord(sheet, payload.id, payload);
+        }
         break;
         
       case 'delete':
-        result = deleteKojenEnerjiRecord(sheet, payload.recordId);
+        result = deleteKojenEnerjiRecord(sheet, payload.id);
+        break;
+        
+      case 'test':
+        result = { success: true, message: 'Kojen enerji bağlantısı başarılı', timestamp: new Date().toISOString() };
         break;
         
       default:
         result = { success: false, error: 'Bilinmeyen işlem: ' + action };
     }
     
-    Logger.log(`📤 Sonuç: ${JSON.stringify(result)}`);
-    return sendResponse(result);
-    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
   } catch (error) {
-    Logger.log('❌ Kojen enerji hatası: ' + error.toString());
-    Logger.log('Stack: ' + error.stack);
-    return sendResponse({ success: false, error: error.toString() });
+    Logger.log('Kojen enerji hatası: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 /**
- * ✅ YENİ: Çoklu saat kaydetme fonksiyonu
+ * Mevcut enerji kaydını ara
  */
+function findExistingEnerjiRecord(sheet, data) {
+  const lastRow = sheet.getLastRow();
+  
+  if (lastRow <= 1) {
+    return null; // Sadece header var
+  }
+  
+  // ÇÖZÜM: Saati allData'dan al
+  let saat = '';
+  try {
+    const allData = JSON.parse(data.allData || '{}');
+    const hours = Object.keys(allData);
+    if (hours.length > 0) {
+      saat = hours[0]; // İlk saati al
+    }
+  } catch (e) {
+    Logger.log('Saat parse hatası: ' + e.toString());
+    return null;
+  }
+  
+  // Verileri al (header hariç)
+  const range = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn());
+  const values = range.getValues();
+  
+  // Tarih (2. sütun), Vardiya (3. sütun), Saat (4. sütun)
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+    if (row[1] === data.Tarih && row[2] === data.vardiya && row[3] === parseInt(saat)) {
+      return {
+        row: i + 2, // Google Sheets 1-based index
+        data: row
+      };
+    }
+  }
+  
+  return null;
+}
+
 function saveMultipleHours(sheet, payload, ss) {
   try {
     // allData'yı parse et (eğer string gelmişse)
@@ -320,12 +547,13 @@ function mapDataToHeaders(data, headers) {
 function createEnerjiSheet(ss, sheetName, motorId) {
   const sheet = ss.insertSheet(sheetName);
   
-  // Başlıkları oluştur
+  // Başlıkları oluştur - Google Sheets'teki gerçek header isimleri
   const headers = [
-    'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 'Cos φ', 
-    'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)', 'TOPLAM AKTİF ENERJİ',
-    'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 
-    'Orijinal Kayıt Zamanı', 'Orijinal Personel', 'Değiştirilen Değerler'
+    'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+    'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+    'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+    'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+    'Orijinal Personel', 'Değiştirilen Değerler'
   ];
   
   // Header'ları ekle
@@ -351,10 +579,11 @@ function createEnerjiSheet(ss, sheetName, motorId) {
  */
 function ensureEnerjiHeaders(sheet, motorId) {
   const headers = [
-    'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 'Cos φ', 
-    'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)', 'TOPLAM AKTİF ENERJİ',
-    'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 
-    'Orijinal Kayıt Zamanı', 'Orijinal Personel', 'Değiştirilen Değerler'
+    'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+    'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+    'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+    'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+    'Orijinal Personel', 'Değiştirilen Değerler'
   ];
   
   const lastRow = sheet.getLastRow();
@@ -449,16 +678,6 @@ function saveKojenEnerjiRecord(sheet, data) {
   try {
     // Çoklu API çağrısını engelle
     const globalLockKey = 'kojen_enerji_global_save_lock';
-    const globalLock = CacheService.getPublicCache().get(globalLockKey);
-    
-    if (globalLock !== null) {
-      return {
-        success: false,
-        error: 'Lütfen bekleyin... Başka bir kayıt işlemi devam ediyor.'
-      };
-    }
-    
-    // Kilit oluştur - LockService kullan
     const lock = LockService.getScriptLock();
     try {
       lock.waitLock(30000); // 30 saniye bekle
@@ -470,8 +689,6 @@ function saveKojenEnerjiRecord(sheet, data) {
     }
     
     const headers = getKojenEnerjiHeaders(sheet);
-    const dataRange = sheet.getDataRange();
-    const values = dataRange.getValues();
     
     // ✅ ÇÖZÜM: Saat bazlı verileri işle
     let allData = {};
@@ -483,10 +700,12 @@ function saveKojenEnerjiRecord(sheet, data) {
         error: 'Saat verileri parse edilemedi: ' + e.toString()
       };
     }
-    const tarih = data.tarih;
-    const vardiya = data.vardiya;
+    
+    const tarih = data.Tarih || data.tarih || '';
+    const vardiya = data.vardiya || '';
     
     Logger.log('🔍 İşlenecek saat verileri: ' + JSON.stringify(allData));
+    Logger.log('📅 Tarih: ' + tarih + ', Vardiya: ' + vardiya);
     
     // Her saat için ayrı kayıt oluştur
     const results = [];
@@ -504,16 +723,29 @@ function saveKojenEnerjiRecord(sheet, data) {
       
       Logger.log('✅ Saat ' + hour + ' için veri işleniyor: ' + JSON.stringify(hourData));
       
-      // Veriyi hazırla
+      // Veriyi hazırla - doğru alan isimleri ile
       const recordData = {
         tarih: tarih,
         vardiya: vardiya,
-        saat: parseInt(hour),
-        ...hourData
+        saat: hour,
+        'aydem-voltaji': hourData['aydem-voltaji'] || 0,
+        'aktif-guc': hourData['aktif-guc'] || 0,
+        'reaktif-guc': hourData['reaktif-guc'] || 0,
+        'cos-fi': hourData['cos-fi'] || 0,
+        'ort-akim': hourData['ort-akim'] || 0,
+        'ort-gerilim': hourData['ort-gerilim'] || 0,
+        'notur-akimi': hourData['notur-akimi'] || 0,
+        'tahrik-gerilimi': hourData['tahrik-gerilimi'] || 0,
+        'toplam-aktif-enerji': hourData['toplam-aktif-enerji'] || 0,
+        'calisma-saati': hourData['calisma-saati'] || 0,
+        'kalkis-sayisi': hourData['kalkis-sayisi'] || 0
       };
       
       // Çakışma kontrolü - values üzerinden yap (performanslı)
       let rowIndex = -1;
+      const dataRange = sheet.getDataRange();
+      const values = dataRange.getValues();
+      
       for (let i = 1; i < values.length; i++) {
         const row = values[i];
         const existingDate = row[headers.indexOf('Tarih')];
@@ -528,8 +760,101 @@ function saveKojenEnerjiRecord(sheet, data) {
       }
       
       if (rowIndex === -1) {
-        // Yeni satır olarak hazırla - dinamik mapping kullan
-        const newRow = mapDataToHeaders(recordData, headers);
+        // Yeni satır olarak hazırla - performans için toplu ekleme
+        const newRow = [];
+        headers.forEach(header => {
+          let value = '';
+          
+          // Header ve data eşleşmesi
+          switch(header) {
+            case 'ID':
+              value = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+              break;
+            case 'Tarih':
+              // TÜRKÇE format: dd.MM.yyyy
+              let tarihValue = recordData.tarih || '';
+              if (tarihValue) {
+                // Eğer ISO formatında geldiyse (yyyy-mm-dd) Türkçe format'a çevir
+                if (tarihValue.includes('-')) {
+                  try {
+                    const parsedDate = new Date(tarihValue);
+                    if (!isNaN(parsedDate.getTime())) {
+                      tarihValue = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd.MM.yyyy');
+                    }
+                  } catch (e) {
+                    Logger.log('Tarih formatlama hatası: ' + e.toString());
+                  }
+                }
+              }
+              value = tarihValue;
+              break;
+            case 'Vardiya':
+              value = recordData.vardiya || '';
+              break;
+            case 'Saat':
+              // Saat formatını 23:00:00 olarak döndür
+              const hour = recordData.saat || currentHour;
+              value = hour.toString() + ':00:00';
+              break;
+            case 'L1-L2 AYDEM VOLTAJI':
+              value = recordData['aydem-voltaji'] || 0;
+              break;
+            case '(P) AKTİF GÜÇ':
+              value = recordData['aktif-guc'] || 0;
+              break;
+            case '(Q) REAKTİF GÜÇ':
+              value = recordData['reaktif-guc'] || 0;
+              break;
+            case 'Cos φ':
+              value = recordData['cos-fi'] || 0;
+              break;
+            case 'ORT.AKIM':
+              value = recordData['ort-akim'] || 0;
+              break;
+            case 'ORT.GERİLİM':
+              value = recordData['ort-gerilim'] || 0;
+              break;
+            case 'NÖTR AKIMI (LN)':
+              value = recordData['notur-akimi'] || 0;
+              break;
+            case 'TAHRİK GERİLİMİ (UE)':
+              value = recordData['tahrik-gerilimi'] || 0;
+              break;
+            case 'TOPLAM AKTİF ENERJİ':
+              value = recordData['toplam-aktif-enerji'] || 0;
+              break;
+            case 'ÇALIŞMA SAATİ':
+              value = recordData['calisma-saati'] || 0;
+              break;
+            case 'KALKIŞ SAYISI':
+              value = recordData['kalkis-sayisi'] || 0;
+              break;
+            case 'Kaydeden':
+              value = data.Kaydeden || 'Bilinmeyen';
+              break;
+            case 'Kayıt Zamanı':
+              value = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd.MM.yyyy HH:mm:ss');
+              break;
+            case 'Güncelleme Zamanı':
+              value = '';
+              break;
+            case 'Güncelleyen':
+              value = '';
+              break;
+            case 'Orijinal Kayıt Zamanı':
+              value = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd.MM.yyyy HH:mm:ss');
+              break;
+            case 'Orijinal Personel':
+              value = data.Kaydeden || 'Bilinmeyen';
+              break;
+            case 'Değiştirilen Değerler':
+              value = '';
+              break;
+          }
+          
+          newRow.push(value);
+        });
+        
         newRows.push(newRow);
         results.push({ hour, success: true, action: 'created', data: hourData });
       } else {
@@ -686,7 +1011,7 @@ function getKojenEnerjiRecords(sheet, filters = {}) {
         let cellValue = row[headerIndex];
 
         if (cellValue instanceof Date) {
-          // Tarih ve saat formatlama
+          // Tarih ve saat formatlama - TÜRKÇE format
           if (header === 'Kayıt Zamanı') {
             cellValue = Utilities.formatDate(
               cellValue,
@@ -697,8 +1022,12 @@ function getKojenEnerjiRecords(sheet, filters = {}) {
             cellValue = Utilities.formatDate(
               cellValue,
               'Europe/Istanbul',
-              'yyyy-MM-dd'
+              'dd.MM.yyyy'
             );
+          } else if (header === 'Saat') {
+            // Saat formatını sadece saat olarak döndür (örn: 6 veya 8)
+            const hour = cellValue.getHours();
+            cellValue = hour.toString();
           }
         }
 
@@ -738,11 +1067,32 @@ function getKojenEnerjiRecords(sheet, filters = {}) {
       }
     }
     
-    // Filtreleme
+    // Filtreleme - TÜRKÇE tarih formatı
     if (filters.tarih) {
       records = records.filter(record => {
         const recordDate = record['Tarih'] ? record['Tarih'].toString() : '';
-        const filterDate = filters.tarih.toString();
+        // Filter tarihini de dd.MM.yyyy formatına çevir
+        let filterDate = filters.tarih.toString();
+        if (filters.tarih instanceof Date) {
+          filterDate = Utilities.formatDate(filters.tarih, 'Europe/Istanbul', 'dd.MM.yyyy');
+        } else {
+          // String formatını normalize et - TÜRKÇE format
+          filterDate = filters.tarih.toString()
+            .replace(/\//g, '.')
+            .replace(/-/g, '.')
+            .trim();
+          
+          try {
+            const parsedDate = new Date(filterDate);
+            if (!isNaN(parsedDate.getTime())) {
+              filterDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd.MM.yyyy');
+            }
+          } catch (e) {
+            // Formatlama hatası olursa orijinal string kullan
+            Logger.log('Filter tarih formatlama hatası: ' + e.toString());
+          }
+        }
+        
         return recordDate === filterDate;
       });
     }
@@ -793,14 +1143,50 @@ function getKojenEnerjiRecords(sheet, filters = {}) {
 }
 
 /**
+ * Saat normalize et - farklı formatları tek standarda çevir
+ */
+function normalizeHour(hourValue) {
+  if (!hourValue) return null;
+
+  // String ise temizle
+  let str = hourValue.toString().trim();
+
+  // Eğer "00:00:00" veya "0:00:00" formatında ise
+  if (str.includes(':')) {
+    const parts = str.split(':');
+    const h = parseInt(parts[0], 10);
+    return isNaN(h) ? null : h;
+  }
+
+  // Eğer sadece sayı ise
+  const h = parseInt(str, 10);
+  return isNaN(h) ? null : h;
+}
+
+/**
  * Kojen enerji kayıt kontrolü
  */
 function checkKojenEnerjiRecord(sheet, data) {
   try {
-    const tarih = data.tarih;
+    const tarih = data.Tarih;
     const vardiya = data.vardiya;
-    const saat = data.saat;
     const motor = data.motor;
+    
+    // ✅ ÇÖZÜM: Saati allData'dan al
+    let saat = '';
+    try {
+      const allData = JSON.parse(data.allData || '{}');
+      const hours = Object.keys(allData);
+      Logger.log('🔍 allData içeriği: ' + JSON.stringify(allData));
+      Logger.log('🔍 Bulunan saatler: ' + JSON.stringify(hours));
+      
+      if (hours.length > 0) {
+        saat = hours[0]; // İlk saati al
+        Logger.log('🔍 Kontrol edilecek saat: ' + saat);
+      }
+    } catch (e) {
+      Logger.log('Saat parse hatası: ' + e.toString());
+    }
     
     // ✅ ÇÖZÜM: Boş sheet kontrolü
     const lastRow = sheet.getLastRow();
@@ -813,22 +1199,42 @@ function checkKojenEnerjiRecord(sheet, data) {
       };
     }
     
-    // Tarih formatını normalize et
-    const normalizedTargetDate = tarih.toString()
-      .replace(/\./g, '-')
-      .replace(/\//g, '-')
-      .trim();
+    // Tarih formatını normalize et - TÜRKÇE format: dd.MM.yyyy
+    let normalizedTargetDate = tarih.toString();
+    if (tarih instanceof Date) {
+      normalizedTargetDate = Utilities.formatDate(tarih, 'Europe/Istanbul', 'dd.MM.yyyy');
+    } else {
+      // String formatını normalize et - TÜRKÇE format
+      normalizedTargetDate = tarih.toString()
+        .replace(/\//g, '.')
+        .replace(/-/g, '.')
+        .trim();
+      
+      // Eğer format farklıysa tekrar formatla
+      try {
+        const parsedDate = new Date(normalizedTargetDate);
+        if (!isNaN(parsedDate.getTime())) {
+          normalizedTargetDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd.MM.yyyy');
+        }
+      } catch (e) {
+        Logger.log('Tarih formatlama hatası, orijinal kullanılıyor: ' + e.toString());
+      }
+    }
     
-    // Vardiya tipini tam metin formatına çevir
+    // ✅ ÇÖZÜM: Saati normalize et
+    let normalizedSaat = normalizeHour(saat);
+    Logger.log(`🔍 Normalize edilmiş saat: "${saat}" → ${normalizedSaat}`);
+    
+    // Vardiya tipini tam metin formatına çevir (TÜRKÇE)
     const vardiyaTipMap = {
+      'GECE': 'Gece Vardiyası',
+      'GÜNDÜZ': 'Gündüz Vardiyası',
+      'AKŞAM': 'Akşam Vardiyası',
       'gece': 'Gece Vardiyası',
       'gunduz': 'Gündüz Vardiyası',
       'aksam': 'Akşam Vardiyası'
     };
     const normalizedVardiyaTipi = vardiyaTipMap[vardiya] || vardiya;
-    
-    // Saati normalize et
-    const normalizedSaat = saat.toString().replace(':00', '').trim();
     
     // Sheet'den verileri al
     const dataRange = sheet.getDataRange();
@@ -849,48 +1255,87 @@ function checkKojenEnerjiRecord(sheet, data) {
     let low = 1;
     let high = values.length - 1;
     
+    Logger.log('🔍 Binary search başlangıç:', {
+      'totalRows': values.length,
+      'low': low,
+      'high': high,
+      'targetDate': normalizedTargetDate,
+      'targetVardiya': normalizedVardiyaTipi,
+      'targetSaat': normalizedSaat
+    });
+    
     while (low <= high) {
       const mid = Math.floor((low + high) / 2);
       const midDate = values[mid][headers.indexOf('Tarih')];
+      const midVardiya = values[mid][headers.indexOf('Vardiya')];
+      const midSaat = values[mid][headers.indexOf('Saat')];
       
-      if (midDate) {
-        const normalizedMidDate = Utilities.formatDate(midDate, 'Europe/Istanbul', 'yyyy-MM-dd');
-        
-        if (normalizedMidDate < normalizedTargetDate) {
-          low = mid + 1;
-        } else if (normalizedMidDate > normalizedTargetDate) {
-          high = mid - 1;
-        } else {
-          // Tarih eşleşti, şimdi vardiya ve saat kontrolü
-          const existingVardiya = values[mid][headers.indexOf('Vardiya')];
-          const existingSaat = values[mid][headers.indexOf('Saat')];
-          
-          if (existingVardiya === normalizedVardiyaTipi && existingSaat === parseInt(normalizedSaat)) {
-            return {
-              success: true,
-              exists: true,
-              record: {
-                row: mid + 1,
-                data: values[mid]
-              }
-            };
+      Logger.log(`🔍 Binary search step ${mid}:`, {
+        'midDate': midDate,
+        'midVardiya': midVardiya,
+        'midSaat': midSaat
+      });
+      
+      // Tarih karşılaştırması - normalize edilmiş tarihlerle
+      let normalizedMidDate = '';
+      if (midDate instanceof Date) {
+        normalizedMidDate = Utilities.formatDate(midDate, 'Europe/Istanbul', 'dd.MM.yyyy');
+      } else {
+        normalizedMidDate = midDate.toString();
+      }
+      
+      // Saat normalizasyonu
+      let normalizedMidSaat = '';
+      if (midSaat) {
+        const normalizedHour = normalizeHour(midSaat);
+        normalizedMidSaat = normalizedHour !== null ? normalizedHour.toString() : '';
+      }
+      
+      Logger.log(`🔍 Karşılaştırma:`, {
+        'normalizedMidDate': normalizedMidDate,
+        'normalizedTargetDate': normalizedTargetDate,
+        'midVardiya': midVardiya,
+        'normalizedVardiyaTipi': normalizedVardiyaTipi,
+        'midSaat': midSaat,
+        'normalizedMidSaat': normalizedMidSaat,
+        'parseInt(normalizedSaat)': parseInt(normalizedMidSaat)
+      });
+      
+      if (normalizedMidDate === normalizedTargetDate && 
+          midVardiya === normalizedVardiyaTipi && 
+          normalizedMidSaat === normalizedSaat) {
+        Logger.log('✅ Kayıt bulundu!');
+        return {
+          success: true,
+          exists: true,
+          record: {
+            row: mid + 1,
+            data: values[mid]
           }
-        }
+        };
+      }
+      
+      if (normalizedMidDate < normalizedTargetDate) {
+        low = mid + 1;
       } else {
         high = mid - 1;
       }
     }
+    
+    Logger.log('❌ Kayıt bulunamadı - binary search tamamlandı');
     
     return {
       success: true,
       exists: false,
       message: 'Kayıt bulunamadı'
     };
+    
   } catch (error) {
     Logger.log('checkKojenEnerjiRecord hatası: ' + error.toString());
     return {
       success: false,
-      error: error.toString()
+      error: error.toString(),
+      timestamp: new Date().toISOString()
     };
   }
 }
@@ -1033,10 +1478,11 @@ function getKojenEnerjiHeaders(sheet) {
     if (lastCol === 0) {
       console.log('Sheet boş, manuel başlıklar dönülüyor');
       return [
-        'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 'Cos φ', 
-        'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)', 'TOPLAM AKTİF ENERJİ',
-        'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 
-        'Orijinal Kayıt Zamanı', 'Orijinal Personel', 'Değiştirilen Değerler'
+        'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+        'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+        'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+        'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+        'Orijinal Personel', 'Değiştirilen Değerler'
       ];
     }
     
@@ -1047,10 +1493,11 @@ function getKojenEnerjiHeaders(sheet) {
     if (!headers || headers.length === 0 || headers[0] !== 'ID') {
       console.log('Başlıklar geçersiz, manuel başlıklar dönülüyor');
       return [
-        'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 'Cos φ', 
-        'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)', 'TOPLAM AKTİF ENERJİ',
-        'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 
-        'Orijinal Kayıt Zamanı', 'Orijinal Personel', 'Değiştirilen Değerler'
+        'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+        'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+        'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+        'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+        'Orijinal Personel', 'Değiştirilen Değerler'
       ];
     }
     
@@ -1061,10 +1508,11 @@ function getKojenEnerjiHeaders(sheet) {
     console.log('getKojenEnerjiHeaders hatası:', error);
     // Hata durumunda da manuel başlıklar dön
     return [
-      'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 'Cos φ', 
-      'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)', 'TOPLAM AKTİF ENERJİ',
-      'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 
-      'Orijinal Kayıt Zamanı', 'Orijinal Personel', 'Değiştirilen Değerler'
+      'ID', 'Tarih', 'Vardiya', 'Saat', 'L1-L2 AYDEM VOLTAJI', '(P) AKTİF GÜÇ', '(Q) REAKTİF GÜÇ', 
+      'Cos φ', 'ORT.AKIM', 'ORT.GERİLİM', 'NÖTR AKIMI (LN)', 'TAHRİK GERİLİMİ (UE)',
+      'TOPLAM AKTİF ENERJİ', 'ÇALIŞMA SAATİ', 'KALKIŞ SAYISI', 'Kaydeden',
+      'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
+      'Orijinal Personel', 'Değiştirilen Değerler'
     ];
   }
 }

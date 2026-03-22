@@ -671,23 +671,23 @@ const EnerjiModulu = {
         // Sayfa başlığını güncelleme (orijinal başlık kalsın)
         const pageHeader = document.querySelector('#saatlik-page .page-header h1');
         if (pageHeader) {
-            console.log('✅ Sayfa başlığı korundu: "Saatlik Aktif ve Reaktif"');
+            // Başlık korundu - log kaldırıldı
         } else {
-            console.log('❌ Sayfa başlığı bulunamadı');
+            // Başlık bulunamadı - log kaldırıldı
         }
         
         const dailyPageHeader = document.querySelector('#gunluk-enerji-page .page-header h1');
         if (dailyPageHeader) {
-            console.log('✅ Sayfa başlığı korundu: "Günlük Enerji Verileri"');
+            // Başlık korundu - log kaldırıldı
         } else {
-            console.log('❌ Günlük Enerji sayfa başlığı bulunamadı');
+            // Başlık bulunamadı - log kaldırıldı
         }
         
         const buharPageHeader = document.querySelector('#buhar-page .page-header h1');
         if (buharPageHeader) {
-            console.log('✅ Sayfa başlığı korundu: "Buhar Verileri"');
+            // Başlık korundu - log kaldırıldı
         } else {
-            console.log('❌ Buhar sayfa başlığı bulunamadı');
+            // Başlık bulunamadı - log kaldırıldı
         }
         
         const kojenMotorPageHeader = document.querySelector('#kojen-motor-page .page-header h1');
