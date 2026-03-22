@@ -13,9 +13,6 @@ const KojenEnerji = {
             return;
         }
         
-        // Local Storage temizle - eski kayıtları sil
-        this.clearLocalStorage();
-        
         // Tabloyu oluştur
         this.generateTable();
         
@@ -193,39 +190,10 @@ const KojenEnerji = {
     },
 
     /**
-     * Local Storage temizle - eski kayıtları sil
+     * Vardiyayı belirle
      */
-    clearLocalStorage: function() {
-        console.log('🧹 Local Storage temizleniyor...');
-        
-        // Enerji ile ilgili tüm localStorage verilerini sil
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && (key.includes('enerji') || key.includes('kojen'))) {
-                keysToRemove.push(key);
-            }
-        }
-        
-        keysToRemove.forEach(key => {
-            console.log(`🗑️ Silinen key: ${key}`);
-            localStorage.removeItem(key);
-        });
-        
-        console.log(`✅ ${keysToRemove.length} adet localStorage kaydı silindi`);
-        
-        if (window.Utils && Utils.showToast) {
-            Utils.showToast(`✅ ${keysToRemove.length} adet eski kayıt temizlendi`, 'success');
-        }
-    },
-
-    /**
-     * Aktif vardiyayı belirle
-     */
-    getAktifVardiya: function() {
-        const currentHour = new Date().getHours();
-        
-        if (currentHour < 8) {
+    getVardiya: function(currentHour) {
+        if (currentHour >= 0 && currentHour < 8) {
             return 'GECE';
         } else if (currentHour < 16) {
             return 'GÜNDÜZ';
@@ -580,8 +548,8 @@ const KojenEnerji = {
             return;
         }
 
-        // Mevcut veriyi kaydet (localStorage'dan kaldır - sadece Google Sheets)
-        console.log('� Motor değiştiriliyor, veri temizleniyor...');
+        // Mevcut veriyi kaydet 
+        console.log('🔄 Motor değiştiriliyor, veri temizleniyor...');
         this.clearData();
 
         // Tabloyu yeniden oluştur
@@ -892,7 +860,7 @@ const KojenEnerji = {
                 saveBtn.textContent = '💾 Kaydet';
             }
             
-            // LocalStorage'a kaydetme - sadece hata mesajı göster
+            // Sadece hata mesajı göster
             this.updateStatus(new Date().getHours(), 'hata');
             
             if (window.Utils && Utils.showToast) {

@@ -123,7 +123,7 @@ const CONFIG = {
     // Google Sheets Web App URL'leri (API Key gerekmez)
     GOOGLE_SHEETS_WEB_APP_URLS: {
         unified: 'https://script.google.com/macros/s/AKfycbzsu_AsckzffzmoLQ1UaSW8XQxEF2t8zzgkykP9g11Jh7hldFXcUAzgKDNvPYacbzw/exec', // En yeni deploy edilen unified URL
-        buhar: 'https://script.google.com/macros/s/AKfycbwR-EO0D2JLq78lubx8qrJcZEeOFgOeisu1zsaiLWRF7LlTagH8eQ4y8R9VmsAqRBSf/exec',
+        buhar: 'https://script.google.com/macros/s/AKfycbyTuu7MEU2cvbyZ4RHurqNVU9x2-3-uyOXLoqXs01Y2JSTmSfliJwVP51NSoRMerikI/exec',
         saatlik: 'https://script.google.com/macros/s/AKfycbwf_e62Ky3zU4EmTMg25dMY6UgzGGg3JK1k7U6K_CYJvuVkRATh62-U7ouJHgJt1HYO/exec',
         vardiya: 'https://script.google.com/macros/s/AKfycbyRanD1xaYrYQJN3At39LtCuX8iG0W9nWHpXaZa-T04olmOAQTMNTIxiOFjoucNaZZs/exec',
         gunluk_enerji: 'https://script.google.com/macros/s/AKfycbySueMR25G2FxZPe2ZC_IArdvROg77yzELFRHHM7jnMaa-luT1i2_XaqMAt67Vy0lIe/exec',

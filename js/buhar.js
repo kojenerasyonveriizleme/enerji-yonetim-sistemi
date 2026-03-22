@@ -402,14 +402,6 @@ const BuharVerileri = {
                 }
             }
             
-            // ✅ LocalStorage kontrolü (ek güvenlik)
-            const storageKey = `buhar-${steamDate}`;
-            const existingRecord = Utils.loadFromStorage(storageKey);
-            if (existingRecord) {
-                Utils.showToast(`Bu tarihte (${steamDate}) zaten bir buhar kaydı var!`, 'warning');
-                return;
-            }
-            
             // ✅ Tek kilit: hem UI hem logic
             this.setLoadingState(true);
             const formData = new FormData(document.getElementById('steam-form'));
@@ -833,12 +825,14 @@ const BuharVerileri = {
             
             // Google Sheets'ten bu tarih için kayıt kontrolü yap
             if (!CONFIG.DEMO_MODE && window.GoogleSheetsAPI) {
-                // Seçilen tarihi olduğu gibi kullan (1 gün geri gitme)
+                // Seçilen tarihi bir gün geriye al (gece vardiyası mantığı)
                 const selectedDateObj = new Date(selectedDate);
+                const yesterdayDateObj = new Date(selectedDateObj);
+                yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1);
                 
-                const year = selectedDateObj.getFullYear();
-                const month = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
-                const day = String(selectedDateObj.getDate()).padStart(2, '0');
+                const year = yesterdayDateObj.getFullYear();
+                const month = String(yesterdayDateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(yesterdayDateObj.getDate()).padStart(2, '0');
                 const recordDate = `${year}-${month}-${day}`; // YYYY-MM-DD formatında
                 
                 // Kontrol için DD/MM/YYYY formatına çevir (API için)
@@ -863,25 +857,28 @@ const BuharVerileri = {
                     // Gelen kayıtların tarihlerini kontrol et
                     const matchingRecords = result.data.filter(record => {
                         const recordDateFromSheet = this.normalizeDate(record.Tarih); // 'date' yerine 'Tarih'
-                        const isMatch = recordDateFromSheet === recordDate; // YYYY-MM-DD formatında karşılaştır
+                        const isMatch = recordDateFromSheet === recordDate;
                         this.debugLog(`Kayıt eşleşme kontrolü: ${record.Tarih} -> ${recordDateFromSheet} vs ${recordDate} = ${isMatch}`);
                         return isMatch;
                     });
                     
                     this.debugLog(`Eşleşen kayıt sayısı: ${matchingRecords.length}`);
                     
-                if (matchingRecords.length > 0) {
-                    // Kayıt varsa input'ları kilitle
-                    this.disableFormInputs(true);
-                    Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
+                    if (matchingRecords.length > 0) {
+                        // Kayıt varsa input'ları kilitle
+                        this.debugLog(`✅ Kayıt bulundu, inputlar kilitleniyor... eşleşen kayıt: ${matchingRecords.length}`);
+                        this.disableFormInputs(true);
+                        Utils.showToast(`⚠️ ${selectedDate} tarihi için zaten kayıt mevcut`, 'warning');
+                    } else {
+                        // Kayıt yoksa input'ları aç
+                        this.debugLog(`❌ Kayıt bulunamadı, inputlar açılıyor... eşleşen kayıt: ${matchingRecords.length}`);
+                        this.disableFormInputs(false);
+                    }
                 } else {
                     // Kayıt yoksa input'ları aç
+                    this.debugLog(`❌ Veri gelmedi, inputlar açılıyor... result.success=${result.success}, data=${result.data}`);
                     this.disableFormInputs(false);
                 }
-            } else {
-                // Kayıt yoksa input'ları aç
-                this.disableFormInputs(false);
-            }
         } else {
             // Demo modunda kontrol yapma
             this.disableFormInputs(false);
@@ -898,14 +895,24 @@ const BuharVerileri = {
      * Form input'larını aktif/pasif yap
      */
     disableFormInputs: function(disable) {
+        this.debugLog(`🔒 Input kilitleme çağrıldı: disable=${disable}`);
+        
         const form = document.getElementById('steam-form');
         const submitBtn = document.getElementById('steam-form-submit');
         
+        this.debugLog(`🔒 Form elementleri: form=${!!form}, submitBtn=${!!submitBtn}`);
+        
         if (form) {
             const inputs = form.querySelectorAll('input, textarea, button');
-            inputs.forEach(input => {
+            this.debugLog(`🔒 Bulunan input sayısı: ${inputs.length}`);
+            
+            inputs.forEach((input, index) => {
+                this.debugLog(`🔒 Input ${index + 1}: id=${input.id}, type=${input.type}, disabled=${input.disabled}`);
+                
                 if (input.id !== 'reset-steam-form') { // Temizle butonunu kilitleme
                     input.disabled = disable;
+                    this.debugLog(`🔒 Input ${index + 1} kilitlendi: id=${input.id}, disabled=${input.disabled}`);
+                    
                     if (disable) {
                         input.classList.add('disabled');
                         input.title = 'Bu tarih için zaten kayıt mevcut';
@@ -913,8 +920,14 @@ const BuharVerileri = {
                         input.classList.remove('disabled');
                         input.title = '';
                     }
+                } else {
+                    this.debugLog(`🔒 Input ${index + 1} atlandı (temizle butonu): id=${input.id}`);
                 }
             });
+            
+            this.debugLog(`🔒 Input kilitleme tamamlandı: disable=${disable}`);
+        } else {
+            this.debugLog(`❌ Form bulunamadı!`);
         }
         
         if (submitBtn) {
