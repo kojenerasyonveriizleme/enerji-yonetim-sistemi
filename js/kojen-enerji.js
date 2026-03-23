@@ -139,31 +139,29 @@ const KojenEnerji = {
                 });
                 
                 // ÇİFT KAYIT ENGELİ - çok daha sıkı kontrol
-                // Gerçekten kayıt var mı diye kontrol et
-                const hasRealData = result.data && 
+                // GERÇEK VERİ KONTROLÜ - sadece gerçek verisi olan kayıtları say
+                let hasRealData = false;
+                let hasAnyData = false;
+                
+                hasRealData = result.data && 
                                    typeof result.data === 'object' && 
                                    Object.keys(result.data).length > 0 &&
                                    Object.values(result.data).some(value => 
                                        value && 
                                        typeof value === 'object' && 
-                                       Object.keys(value).length > 0
+                                       Object.keys(value).length > 0 &&
+                                       Object.values(value).some(val => val !== null && val !== undefined && val !== '' && val !== 0)
                                    );
-                
-                // GEÇİCİ ÇÖZÜM: data içinde herhangi bir değer varsa kabul et
-                const hasAnyData = result.data && 
-                                  typeof result.data === 'object' && 
-                                  Object.keys(result.data).length > 0;
                 
                 console.log('🔍 Gerçek veri kontrolü:', {
                     'hasRealData': hasRealData,
-                    'hasAnyData': hasAnyData,
                     'result.data': result.data,
                     'result.data type': typeof result.data,
                     'result.data keys': result.data ? Object.keys(result.data) : 'null',
                     'result.data values': result.data ? Object.values(result.data) : 'null'
                 });
                 
-                if (result.success && (result.exists === true || hasRealData || hasAnyData)) {
+                if (result.success && (result.exists === true || hasRealData)) {
                     console.log('⚠️ Mevcut kayıt bulundu, inputlar kilitleniyor...');
                     
                     // TÜM inputları kontrol et - herhangi biri kilitli mi?
@@ -572,9 +570,9 @@ const KojenEnerji = {
             return;
         }
 
-        // Mevcut veriyi kaydet 
-        console.log('🔄 Motor değiştiriliyor, veri temizleniyor...');
-        this.clearData();
+        // TÜM local verileri temizle - sadece Google Sheets ana kayıt kullanılacak
+        console.log('🔄 Tüm local veriler temizleniyor, sadece Google Sheets kayıtları kullanılacak...');
+        this.clearAllLocalData();
 
         // Tabloyu yeniden oluştur
         console.log('🔄 Tablo yeniden oluşturuluyor...');
@@ -584,6 +582,29 @@ const KojenEnerji = {
         this.checkExistingRecords();
         
         console.log(`✅ Motor değiştirildi: ${motorId}`);
+    },
+
+    /**
+     * Tüm local verileri temizle - sadece Google Sheets ana kayıt kullanılacak
+     */
+    clearAllLocalData: function() {
+        console.log('🗑️ Tüm local veriler temizleniyor...');
+        
+        // localStorage'daki tüm kojen enerji verilerini temizle
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('kojen-enerji-')) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`🗑️ Local veri silindi: ${key}`);
+        });
+        
+        console.log(`✅ ${keysToRemove.length} adet local veri temizlendi`);
     },
 
     /**
@@ -635,10 +656,10 @@ const KojenEnerji = {
     },
 
     /**
-     * Verileri kaydet
+     * Verileri kaydet - sadece Google Sheets ana kayıt
      */
     saveData: function() {
-        console.log('💾 Kojen Enerji verileri kaydediliyor...');
+        console.log('💾 Kojen Enerji verileri kaydediliyor (sadece Google Sheets)...');
         
         // Çift kayıt engeli
         const saveBtn = document.getElementById('save-kojen-enerji-btn');
@@ -670,39 +691,59 @@ const KojenEnerji = {
         
         console.log('📊 Saat verisi:', hourData);
         
-        if (!hourData || Object.keys(hourData).length === 0) {
-            console.log('⚠️ Kaydedilecek veri bulunamadı');
-            if (window.Utils && Utils.showToast) {
-                Utils.showToast('⚠️ Kaydedilecek veri bulunamadı', 'warning');
-            }
-            
-            // Butonu eski haline getir
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.textContent = '💾 Kaydet';
-            }
-            
-            const disableBtn = document.getElementById('motor-devre-disi-enerji-btn');
-            
-            if (disableBtn) {
-                disableBtn.disabled = false;
-                disableBtn.textContent = '🔴 Motor Devre Dışı Kaydet';
-                disableBtn.style.backgroundColor = '';
-                disableBtn.style.cursor = 'pointer';
-            }
-            
-            return;
-        }
+        // ÇİFT KAYIT ENGELİ - bu saat için zaten kayıt varsa yeni kayıt yapma
+        const checkData = {
+            action: 'check',
+            module: 'kojen_enerji',
+            motorId: selectedMotor,
+            Tarih: selectedDate,
+            vardiya: document.getElementById('active-enerji-vardiya')?.textContent || 'GÜNDÜZ',
+            allData: JSON.stringify({ [currentHour]: {} })
+        };
+        
+        GoogleSheetsAPI.saveData('kojen_enerji', checkData)
+            .then(checkResult => {
+                const hasExistingRecord = checkResult.success && checkResult.data && 
+                    typeof checkResult.data === 'object' && 
+                    Object.keys(checkResult.data).length > 0;
+                
+                if (hasExistingRecord) {
+                    console.log('⚠️ Bu saat için zaten kayıt mevcut, yeni kayıt engelleniyor');
+                    if (window.Utils && Utils.showToast) {
+                        Utils.showToast('⚠️ Bu saat için zaten kayıt mevcut', 'warning');
+                    }
+                    
+                    // Butonu eski haline getir
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = '💾 Kaydet';
+                    }
+                    return;
+                }
+                
+                // Kayıt yoksa devam et
+                this.performSave(hourData, selectedMotor, selectedDate, saveBtn);
+            })
+            .catch(error => {
+                console.error('❌ Kayıt kontrolü hatası:', error);
+                this.performSave(hourData, selectedMotor, selectedDate, saveBtn);
+            });
+    },
+    
+    /**
+     * Gerçek kaydetme işlemini yap
+     */
+    performSave: function(hourData, selectedMotor, selectedDate, saveBtn) {
 
         // Google Sheets'e gönder
         this.sendToGoogleSheets(hourData, selectedMotor, selectedDate);
     },
 
     /**
-     * Google Sheets'e gönder
+     * Google Sheets'e gönder - sadece ana kayıt, local yedek yok
      */
     sendToGoogleSheets: function(data, motor, date) {
-        console.log('🌐 Google Sheets\'e gönderiliyor...');
+        console.log('🌐 Google Sheets\'e gönderiliyor (sadece ana kayıt)...');
         console.log('📊 Gönderilecek veri:', data);
         
         // Google Sheets API entegrasyonu (sadece Google Sheets)
@@ -720,7 +761,7 @@ const KojenEnerji = {
                 vardiya = 'GECE';
             }
             
-            // Veriyi allData formatında gönder (Apps Script uyumlu)
+            // Veriyi allData formatında gönder (Apps Script uyumlu) - local yedek yok
             const sheetData = {
                 action: 'save',
                 module: 'kojen_enerji',
@@ -855,9 +896,40 @@ const KojenEnerji = {
     },
 
     /**
-     * Verileri temizle
+     * Saat verisini al
+     */
+    getHourData: function(hour) {
+        const fields = [
+            'aydem-voltaji', 'aktif-guc', 'reaktif-guc', 'cos-fi',
+            'ort-akim', 'ort-gerilim', 'notur-akimi', 'tahrik-gerilimi',
+            'toplam-aktif-enerji', 'calisma-saati', 'kalkis-sayisi'
+        ];
+        
+        const hourData = {};
+        fields.forEach(field => {
+            const input = document.getElementById(`kojen-enerji-${field}-${hour}`);
+            if (input) {
+                const value = input.value.trim();
+                if (value) {
+                    if (field === 'cos-fi') {
+                        hourData[field] = parseFloat(value) || 0;
+                    } else if (field === 'calisma-saati' || field === 'kalkis-sayisi') {
+                        hourData[field] = parseInt(value) || 0;
+                    } else {
+                        hourData[field] = parseFloat(value) || 0;
+                    }
+                }
+            }
+        });
+        
+        return hourData;
+    },
+
+    /**
+     * Form verilerini temizle - localStorage'e dokunma
      */
     clearData: function() {
+        console.log('🔄 Form verileri temizleniyor (localStorage korunuyor)...');
         const currentHour = new Date().getHours();
         const inputs = document.querySelectorAll(`[data-hour="${currentHour}"]`);
         
@@ -870,7 +942,7 @@ const KojenEnerji = {
         this.updateStatus(currentHour, 'bekliyor');
         
         if (window.Utils && Utils.showToast) {
-            Utils.showToast('🔄 Veriler temizlendi', 'info');
+            Utils.showToast('🔄 Form verileri temizlendi', 'info');
         }
     },
 
@@ -881,21 +953,25 @@ const KojenEnerji = {
         try {
             console.log('🔧 Kojen Enerji AKTİF SAYFA için devre dışı kaydetme işlemi başlatıldı...');
             
+            // Debug: Buton ve motor durumunu kontrol et
+            const disableBtn = document.getElementById('motor-devre-disi-enerji-btn');
+            console.log('🔍 Devre dışı butonu bulundu:', disableBtn);
+            console.log('🔍 Buton disabled durumu:', disableBtn?.disabled);
+            
             const dateInput = document.getElementById('kojen-enerji-date');
             const selectedDate = dateInput ? dateInput.value : new Date().toLocaleDateString('tr-TR', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
             }).replace(/\./g, '.');
+            console.log('🔍 Seçili tarih:', selectedDate);
             
-            // Aktif motoru al (sadece aktif sayfanın motoru)
             const activeMotorBtn = document.querySelector('#kojen-enerji-page .motor-btn.active');
-            console.log('🔍 Aktif buton:', activeMotorBtn);
-            console.log('🔍 Buton dataset:', activeMotorBtn?.dataset);
-            console.log('🔍 Buton motor attribute:', activeMotorBtn?.dataset?.motor);
+            console.log('🔍 Aktif motor butonu:', activeMotorBtn);
+            console.log('🔍 Aktif motor dataset:', activeMotorBtn?.dataset);
             
             const selectedMotor = activeMotorBtn ? activeMotorBtn.dataset.motor : 'motor-1';
-            console.log('🔍 Tespit edilen motor:', selectedMotor);
+            console.log('🔍 Seçili motor:', selectedMotor);
             
             // Vardiyayı AKTİF VARDİYA ile belirle
             const currentHour = new Date().getHours();
@@ -914,6 +990,51 @@ const KojenEnerji = {
             // Sadece aktif motor için işlem yap
             if (window.GoogleSheetsAPI) {
                 console.log(`🔄 ${selectedMotor} için ${currentHour}:00 saati kontrol ediliyor...`);
+                
+                // ÇİFT KAYIT ENGELİ - bu saat için zaten kayıt varsa engelle
+                const checkData = {
+                    action: 'check',
+                    module: 'kojen_enerji',
+                    motorId: selectedMotor,
+                    Tarih: selectedDate,
+                    vardiya: aktifVardiya,
+                    allData: JSON.stringify({ [currentHour]: {} })
+                };
+                
+                const checkResult = await GoogleSheetsAPI.saveData('kojen_enerji', checkData);
+                console.log(`🔍 ${selectedMotor} için kayıt kontrolü:`, checkResult);
+                console.log('🔍 Kayıt kontrolü detayı:', {
+                    'success': checkResult.success,
+                    'data': checkResult.data,
+                    'data string': JSON.stringify(checkResult.data, null, 2),
+                    'data type': typeof checkResult.data,
+                    'data keys': checkResult.data ? Object.keys(checkResult.data) : 'null',
+                    'data values': checkResult.data ? Object.values(checkResult.data) : 'null'
+                });
+                
+                // API'dan gelen veri formatına göre kontrol et
+                // Google Sheets API results array'i dönerse, kayıt var demektir
+                const hasExistingRecord = checkResult.success && 
+                    (checkResult.results && checkResult.results.length > 0) ||
+                    (checkResult.data && typeof checkResult.data === 'object' && Object.keys(checkResult.data).length > 0);
+                
+                console.log('🔍 Mevcut kayıt kontrolü:', {
+                    'hasExistingRecord': hasExistingRecord,
+                    'checkResult.success': checkResult.success,
+                    'checkResult.results': checkResult.results,
+                    'checkResult.data': checkResult.data,
+                    'results length': checkResult.results ? checkResult.results.length : 0
+                });
+                
+                if (hasExistingRecord) {
+                    console.log('⚠️ Bu saat için zaten kayıt mevcut, devre dışı kaydetme engelleniyor');
+                    if (window.Utils && Utils.showToast) {
+                        Utils.showToast('⚠️ Bu saat için zaten kayıt mevcut', 'warning');
+                    }
+                    return;
+                }
+                
+                console.log(`✅ Kayıt yok, devre dışı kaydetme devam ediyor...`);
                 
                 const devreDisiData = {};
                 
@@ -1007,6 +1128,10 @@ window.KojenEnerji = KojenEnerji;
 // Otomatik başlatma
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('kojen-enerji-page')) {
+        // Başlangıçta tüm local verileri temizle - sadece Google Sheets kullanılacak
+        console.log('🚀 Kojen Enerji başlatılıyor, local veriler temizleniyor...');
+        KojenEnerji.clearAllLocalData();
+        
         KojenEnerji.init();
     }
 });
