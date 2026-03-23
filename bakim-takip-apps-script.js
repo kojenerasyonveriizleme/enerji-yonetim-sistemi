@@ -46,19 +46,19 @@ function doGet(e) { return doPost(e); }
 
 function createMaintenanceHeaders(sheet, module) {
 if (module === 'periodik') {
-const headers = ['ID', 'Ekipman', 'Planlanan Tarih', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Bakim Saati', 'Aciklama', 'Islemler', 'Sorumlu Personel', 'Maliyet', 'Sonraki Bakim Tarihi', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
+const headers = ['ID', 'Ekipman', 'Planlanan Tarih', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Bakim Saati', 'Aciklama', 'Islemler', 'Sorumlu Personel', 'Maliyet', 'Sonraki Bakim Tarihi', 'Dosyalar', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
 headers.forEach((h, i) => sheet.getRange(1, i + 1).setValue(h));
 sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
 } else if (module === 'normal') {
-const headers = ['ID', 'Ekipman', 'Talep Tarihi', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Bakim Tipi', 'Aciklama', 'Yapilan Islemler', 'Sorumlu Personel', 'Maliyet', 'Parca Listesi', 'Sise Barkod No', 'Su Miktari', 'On Rulman CM3', 'Arka Rulman CM3', 'HT Sicakligi', 'LT Sicakligi', 'Ceket Suyu Sicakligi', 'Antifriz Sicakligi', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
+const headers = ['ID', 'Ekipman', 'Talep Tarihi', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Bakim Tipi', 'Aciklama', 'Yapilan Islemler', 'Sorumlu Personel', 'Maliyet', 'Parca Listesi', 'Sise Barkod No', 'Su Miktari', 'On Rulman CM3', 'Arka Rulman CM3', 'HT Sicakligi', 'LT Sicakligi', 'Ceket Suyu Sicakligi', 'Antifriz Sicakligi', 'Dosyalar', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
 headers.forEach((h, i) => sheet.getRange(1, i + 1).setValue(h));
 sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
 } else if (module === 'ariza') {
-const headers = ['ID', 'Ekipman', 'Ariza Tarihi', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Oncelik', 'Ariza Aciklamasi', 'Cozum Aciklamasi', 'Sorumlu Personel', 'Maliyet', 'Ariza Nedeni', 'Onleyici Onlemler', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
+const headers = ['ID', 'Ekipman', 'Ariza Tarihi', 'Baslangic Tarihi', 'Bitis Tarihi', 'Baslangic Saati', 'Bitis Saati', 'Durum', 'Oncelik', 'Ariza Aciklamasi', 'Cozum Aciklamasi', 'Sorumlu Personel', 'Maliyet', 'Ariza Nedeni', 'Onleyici Onlemler', 'Dosyalar', 'Kaydeden', 'Kayit Zamani', 'Guncelleme Zamani'];
 headers.forEach((h, i) => sheet.getRange(1, i + 1).setValue(h));
 sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
 }
-for (let i = 1; i <= 24; i++) sheet.autoResizeColumn(i);
+for (let i = 1; i <= 25; i++) sheet.autoResizeColumn(i);
 }
 
 function saveMaintenanceRecord(sheet, data) {
@@ -97,6 +97,13 @@ case 'HT Sicakligi': value = data.htSicaklik || ''; break;
 case 'LT Sicakligi': value = data.ltSicaklik || ''; break;
 case 'Ceket Suyu Sicakligi': value = data.ceketSuyuSicaklik || ''; break;
 case 'Antifriz Sicakligi': value = data.antifrizSicaklik || ''; break;
+case 'Dosyalar': 
+  if (data.dosyalar && Array.isArray(data.dosyalar)) {
+    value = data.dosyalar.map(file => 
+      `${file.name} (${file.type}, ${(file.size/1024).toFixed(2)}KB)`
+    ).join('; ');
+  }
+  break;
 case 'Kaydeden': value = data.recordedBy || data.kaydeden || 'admin'; break;
 case 'Kayit Zamani': value = data.timestamp || new Date().toLocaleString('tr-TR'); break;
 case 'Guncelleme Zamani': value = data.guncellemeTarihi || ''; break;
@@ -140,6 +147,13 @@ case 'HT Sicakligi': if (data.htSicaklik) value = data.htSicaklik; break;
 case 'LT Sicakligi': if (data.ltSicaklik) value = data.ltSicaklik; break;
 case 'Ceket Suyu Sicakligi': if (data.ceketSuyuSicaklik) value = data.ceketSuyuSicaklik; break;
 case 'Antifriz Sicakligi': if (data.antifrizSicaklik) value = data.antifrizSicaklik; break;
+case 'Dosyalar': 
+  if (data.dosyalar && Array.isArray(data.dosyalar)) {
+    value = data.dosyalar.map(file => 
+      `${file.name} (${file.type}, ${(file.size/1024).toFixed(2)}KB)`
+    ).join('; ');
+  }
+  break;
 case 'Guncelleme Zamani': value = data.guncellemeTarihi || new Date().toLocaleString('tr-TR'); break;
 }
 updatedRow.push(value);

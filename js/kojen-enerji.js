@@ -699,45 +699,6 @@ const KojenEnerji = {
     },
 
     /**
-     * Saat verisini al
-     */
-    getHourData: function(hour) {
-        const fields = [
-            'aydem-voltaji', 'aktif-guc', 'reaktif-guc', 'cos-fi',
-            'ort-akim', 'ort-gerilim', 'notur-akimi', 'tahrik-gerilimi',
-            'toplam-aktif-enerji', 'calisma-saati', 'kalkis-sayisi'
-        ];
-
-        const data = {};
-        let hasValue = false;
-
-        fields.forEach(field => {
-            const input = document.getElementById(`kojen-enerji-${field}-${hour}`);
-            if (input) {
-                const value = input.value.trim();
-                // Boş değilse veya "DD" ise kabul et
-                if (value !== '') {
-                    if (value === 'DD') {
-                        data[field] = 'DD';
-                        hasValue = true; // DD de değer kabul edilsin
-                    } else {
-                        const numValue = parseFloat(value) || 0;
-                        data[field] = numValue;
-                        if (numValue > 0 || value === '0') hasValue = true; // 0 da değer kabul edilsin
-                    }
-                } else {
-                    data[field] = '';
-                }
-            } else {
-                data[field] = '';
-            }
-        });
-
-        console.log(`🔍 Saat ${hour} veri kontrolü:`, data, 'hasValue:', hasValue);
-        return hasValue ? data : null;
-    },
-
-    /**
      * Google Sheets'e gönder
      */
     sendToGoogleSheets: function(data, motor, date) {
@@ -751,7 +712,7 @@ const KojenEnerji = {
             // Vardiya bilgisini al
             const vardiyaElement = document.getElementById('active-enerji-vardiya');
             const vardiyaText = vardiyaElement ? vardiyaElement.textContent : '';
-            let vardiya = 'GÜNDÜZ'; // varsayılan
+            const vardiya = 'GÜNDÜZ'; // varsayılan
             
             if (vardiyaText.includes('Akşam')) {
                 vardiya = 'AKŞAM';
@@ -954,72 +915,8 @@ const KojenEnerji = {
             if (window.GoogleSheetsAPI) {
                 console.log(`🔄 ${selectedMotor} için ${currentHour}:00 saati kontrol ediliyor...`);
                 
-                // Tarih kontrolü için API çağrısı
-                const checkData = {
-                    action: 'check',
-                    module: 'kojen_enerji',
-                    motorId: selectedMotor,  // ✅ EKLENDİ: Hangi motor kontrol edilecek
-                    Tarih: selectedDate,
-                    vardiya: aktifVardiya,
-                    allData: JSON.stringify({[currentHour.toString()]: {}})
-                };
-                
-                const checkResult = await GoogleSheetsAPI.saveData('kojen_enerji', checkData);
-                console.log(`🔍 ${selectedMotor} kayıt kontrolü sonucu:`, checkResult);
-                
-                // Eğer kayıt varsa butonu kilitle ve işlemi durdur
-                // Gerçekten kayıt var mı diye kontrol et
-                const hasRealData = checkResult.data && 
-                                   typeof checkResult.data === 'object' && 
-                                   Object.keys(checkResult.data).length > 0 &&
-                                   Object.values(checkResult.data).some(value => 
-                                       value && 
-                                       typeof value === 'object' && 
-                                       Object.keys(value).length > 0
-                                   );
-                
-                // GEÇİCİ ÇÖZÜM: data içinde herhangi bir değer varsa kabul et
-                const hasAnyData = checkResult.data && 
-                                  typeof checkResult.data === 'object' && 
-                                  Object.keys(checkResult.data).length > 0;
-                
-                console.log(`🔍 ${selectedMotor} gerçek veri kontrolü:`, {
-                    'hasRealData': hasRealData,
-                    'hasAnyData': hasAnyData,
-                    'checkResult.data': checkResult.data,
-                    'checkResult.data type': typeof checkResult.data,
-                    'checkResult.data keys': checkResult.data ? Object.keys(checkResult.data) : 'null',
-                    'checkResult.data values': checkResult.data ? Object.values(checkResult.data) : 'null'
-                });
-                
-                if (checkResult.success && (checkResult.exists === true || hasRealData || hasAnyData)) {
-                    console.log(`⚠️ ${selectedMotor} için devre dışı kayıt zaten mevcut, buton kilitleniyor...`);
-                    
-                    const disableBtn = document.getElementById('motor-devre-disi-enerji-btn');
-                    if (disableBtn) {
-                        disableBtn.disabled = true;
-                        disableBtn.textContent = `🔴 ${selectedMotor} Devre Dışı (Zaten Kayıtlı)`;
-                        disableBtn.style.backgroundColor = '#6c757d';
-                        disableBtn.style.cursor = 'not-allowed';
-                    }
-                    
-                    if (window.Utils && Utils.showToast) {
-                        Utils.showToast(`⚠️ ${selectedMotor} için devre dışı kayıt zaten mevcut`, 'warning');
-                    }
-                    return;
-                }
-                
-                console.log(`✅ ${selectedMotor} için ${currentHour}:00 devre dışı kaydı yapılacak...`);
-                console.log(`🔍 ${selectedMotor} kontrol sonucu detayı:`, {
-                    'checkResult.success': checkResult.success,
-                    'checkResult.exists': checkResult.exists,
-                    'checkResult.data': checkResult.data,
-                    'hasRealData': hasRealData,
-                    'hasAnyData': hasAnyData
-                });
-                
-                // Tüm enerji alanlarına "DD" kodu gönder
                 const devreDisiData = {};
+                
                 const fields = [
                     'aydem-voltaji', 'aktif-guc', 'reaktif-guc', 'cos-fi',
                     'ort-akim', 'ort-gerilim', 'notur-akimi', 'tahrik-gerilimi',
@@ -1029,6 +926,7 @@ const KojenEnerji = {
                 fields.forEach(field => {
                     devreDisiData[field] = 'DD';
                 });
+                
                 
                 console.log(`🔧 ${selectedMotor} devre dışı verisi:`, devreDisiData);
                 

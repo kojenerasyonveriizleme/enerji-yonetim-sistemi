@@ -128,6 +128,11 @@ const BakimTakibi = {
 
         // Event listener'ları ekle
         this.setupModalEvents(modal, type);
+        
+        // Dosya yükleme event listener'larını ekle
+        setTimeout(() => {
+            this.setupFileUploadEvents(type);
+        }, 100);
     },
 
     /**
@@ -325,6 +330,18 @@ const BakimTakibi = {
                 <div class="form-group">
                     <label>Sorumlu Personel</label>
                     <input type="text" id="personel-${type}" placeholder="Sorumlu personeli girin..." style="color: black;">
+                </div>
+                <div class="form-group file-upload-group">
+                    <label>📎 Belge / Resim / Dosya Yükle</label>
+                    <div class="file-upload-area" id="file-upload-area-${type}">
+                        <input type="file" id="dosya-${type}" name="dosya" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.xls,.xlsx,.txt" style="display: none;">
+                        <div class="file-upload-trigger" onclick="document.getElementById('dosya-${type}').click()">
+                            <span class="upload-icon">📁</span>
+                            <span class="upload-text">Dosya seçmek için tıklayın veya sürükleyin</span>
+                            <span class="upload-hint">PDF, Word, Excel, Resim (max 10MB)</span>
+                        </div>
+                        <div class="file-list" id="file-list-${type}"></div>
+                    </div>
                 </div>
                 
                 ${additionalFields}
@@ -537,6 +554,7 @@ const BakimTakibi = {
                 sorumluPersonel: document.getElementById(`personel-${type}`).value,
                 maliyet: document.getElementById(`maliyet-${type}`).value,
                 sonrakiBakimTarihi: document.getElementById(`sonrakiTarih-${type}`).value,
+                dosyalar: this.uploadedFiles[type] || [],
                 recordedBy: 'admin'
             };
         } else if (type === 'normal') {
@@ -563,6 +581,7 @@ const BakimTakibi = {
                 ltSicaklik: document.getElementById('lt_sicaklik-normal')?.value || '',
                 ceketSuyuSicaklik: document.getElementById('ceket_suyu_sicaklik-normal')?.value || '',
                 antifrizSicaklik: document.getElementById('antifriz_sicaklik-normal')?.value || '',
+                dosyalar: this.uploadedFiles[type] || [],
                 recordedBy: 'admin'
             };
         } else if (type === 'ariza') {
@@ -581,6 +600,7 @@ const BakimTakibi = {
                 maliyet: document.getElementById(`maliyet-${type}`).value,
                 arizaNedeni: document.getElementById(`arizaNedeni-${type}`).value,
                 onleyiciOnlemler: document.getElementById(`onlemler-${type}`).value,
+                dosyalar: this.uploadedFiles[type] || [],
                 recordedBy: 'admin'
             };
         }
@@ -1114,6 +1134,155 @@ const BakimTakibi = {
         Utils.saveToStorage('admin_status', false);
         Utils.showToast('Admin çıkışı yapıldı', 'info');
         this.showAdminLock();
+    },
+
+    /**
+     * Dosya yükleme işlemleri için storage
+     */
+    uploadedFiles: {},
+
+    /**
+     * Dosya seçildiğinde çalışır
+     */
+    handleFileSelect: function(type, event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        // Mevcut dosyaları al veya yeni array oluştur
+        if (!this.uploadedFiles[type]) {
+            this.uploadedFiles[type] = [];
+        }
+
+        // Dosyaları işle
+        Array.from(files).forEach(file => {
+            // Dosya boyutu kontrolü (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                Utils.showToast(`Dosya çok büyük: ${file.name} (max 10MB)`, 'warning');
+                return;
+            }
+
+            // Dosyayı base64 olarak oku
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileData = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    data: e.target.result.split(',')[1], // Base64 data
+                    lastModified: file.lastModified
+                };
+
+                this.uploadedFiles[type].push(fileData);
+                this.renderFileList(type);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Input'u temizle (aynı dosyayı tekrar seçebilmek için)
+        event.target.value = '';
+    },
+
+    /**
+     * Dosya listesini render et
+     */
+    renderFileList: function(type) {
+        const fileList = document.getElementById(`file-list-${type}`);
+        if (!fileList) return;
+
+        const files = this.uploadedFiles[type] || [];
+        
+        if (files.length === 0) {
+            fileList.innerHTML = '';
+            return;
+        }
+
+        fileList.innerHTML = files.map((file, index) => {
+            const fileIcon = this.getFileIcon(file.name);
+            const fileSize = this.formatFileSize(file.size);
+            
+            return `
+                <div class="file-item">
+                    <span class="file-icon">${fileIcon}</span>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                    <button type="button" class="file-remove" onclick="BakimTakibi.removeFile('${type}', ${index})" title="Kaldır">❌</button>
+                </div>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Dosya ikonu belirle
+     */
+    getFileIcon: function(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const iconMap = {
+            pdf: '📄',
+            doc: '📝', docx: '📝',
+            xls: '📊', xlsx: '📊',
+            jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', bmp: '🖼️', webp: '🖼️',
+            txt: '📃',
+            zip: '📦', rar: '📦', '7z': '📦'
+        };
+        return iconMap[ext] || '📎';
+    },
+
+    /**
+     * Dosya boyutunu formatla
+     */
+    formatFileSize: function(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+
+    /**
+     * Dosya kaldır
+     */
+    removeFile: function(type, index) {
+        if (this.uploadedFiles[type]) {
+            this.uploadedFiles[type].splice(index, 1);
+            this.renderFileList(type);
+        }
+    },
+
+    /**
+     * Drag & drop olayları için event listener ekle
+     */
+    setupFileUploadEvents: function(type) {
+        const uploadArea = document.getElementById(`file-upload-area-${type}`);
+        const fileInput = document.getElementById(`dosya-${type}`);
+
+        if (!uploadArea || !fileInput) return;
+
+        // File input change event
+        fileInput.addEventListener('change', (e) => this.handleFileSelect(type, e));
+
+        // Drag & drop events
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                // Mock event object
+                const mockEvent = { target: { files: files } };
+                this.handleFileSelect(type, mockEvent);
+            }
+        });
     }
 };
 

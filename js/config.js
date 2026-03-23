@@ -132,10 +132,10 @@ const CONFIG = {
         gunluk_enerji_alternatif: 'https://script.google.com/macros/s/AKfycbwhyJ15sDwLFF1dFj-B4Mw7mcu2rpRNLo25w8d3-NQyhpEQD_8UV8H782ty53hyF6bU/exec',
         kojen_motor: 'https://script.google.com/macros/s/AKfycbwPecu7487VCknFB7Y2e2Fu-28CGTYijpI24EYZQoeAu-Tzx1EoeVzGYpd829vhVFM/exec',
         kojen_enerji: 'https://script.google.com/macros/s/AKfycbx7EwXi-E1OI_CZ9xh2aIEAnJtUPXXOi_zflH_Ka-xAkKTIQaiuZHe_6xJJ0SXtQ3Fq/exec',
-        bakim: 'https://script.google.com/macros/s/AKfycbyKybJJJTVRouSAbWd1XQzMosYe1a-VfyutTSpJcy7khHMUzfKrBstQ2xEs-qCLW-7D/exec', // Bakım takibi - en son deploy
-        periodik: 'https://script.google.com/macros/s/AKfycbyKybJJJTVRouSAbWd1XQzMosYe1a-VfyutTSpJcy7khHMUzfKrBstQ2xEs-qCLW-7D/exec', // Periyodik bakım - en son deploy
-        normal: 'https://script.google.com/macros/s/AKfycbyKybJJJTVRouSAbWd1XQzMosYe1a-VfyutTSpJcy7khHMUzfKrBstQ2xEs-qCLW-7D/exec', // Normal bakım - en son deploy
-        ariza: 'https://script.google.com/macros/s/AKfycbyKybJJJTVRouSAbWd1XQzMosYe1a-VfyutTSpJcy7khHMUzfKrBstQ2xEs-qCLW-7D/exec', // Arıza bakımı - en son deploy
+        bakim: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Bakım takibi - en son deploy
+        periodik: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Periyodik bakım - en son deploy
+        normal: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Normal bakım - en son deploy
+        ariza: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Arıza bakımı - en son deploy
         
          // Diğer modüller geçici olarak devre dışı
       
