@@ -3,6 +3,12 @@
  * API Key olmadan Google Sheets entegrasyonu
  */
 
+// CONFIG kontrolü
+if (!window.CONFIG) {
+    console.error('❌ CONFIG yüklenmedi! config.js dosyasının önce yüklenmesi gerekir.');
+    console.log('Mevcut CONFIG anahtarları:', Object.keys(window.CONFIG || {}));
+}
+
 const GoogleSheetsAPI = {
     
     /**
@@ -421,5 +427,5 @@ const GoogleSheetsAPI = {
     }
 };
 
-// Global olarak erişilebilir yap
+// Global export (window.GoogleSheetsAPI kullanımı için)
 window.GoogleSheetsAPI = GoogleSheetsAPI;

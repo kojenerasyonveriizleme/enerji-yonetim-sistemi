@@ -1,5 +1,5 @@
 /**
- * KOJEN MOTOR ICIN GOOGLE SHEETS APP SCRIPT
+ * KOJEN ENERJI ICIN GOOGLE SHEETS APP SCRIPT
  * Her motor için ayrı sayfa + kayıt kontrolü
  * 
  * Kurulum:
@@ -16,8 +16,12 @@ function doPost(e) {
     const module = e.parameter.module;
     const timestamp = e.parameter.timestamp;
     
-    // Modül kontrolü - sadece kojen_motor kabul et
-    if (module !== 'kojen_motor') {
+    // Debug log
+    Logger.log('🔍 doPost çağrıldı - action: ' + action + ', module: ' + module);
+    
+    // Modül kontrolü - kojen_enerji, kojen-enerji ve bakim kabul et
+    if (module !== 'kojen_enerji' && module !== 'kojen-enerji' && module !== 'bakim') {
+      Logger.log('❌ Geçersiz modul: ' + module);
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
         error: 'Gecersiz modul: ' + module,
@@ -34,17 +38,17 @@ function doPost(e) {
     });
     
     // Motor ID'sini al
-    const motorId = payload.motorId || 'motor-1';
+    const motorId = payload.motorId || payload.motor || 'motor-1';
     
     // Sheet isimlerini belirle - her motor için ayrı
     const sheetNames = {
-      'motor-1': 'GM 1 Motor Verileri',
-      'motor-2': 'GM 2 Motor Verileri', 
-      'motor-3': 'GM 3 Motor Verileri'
+      'motor-1': 'GM 1 Enerji Verileri',
+      'motor-2': 'GM 2 Enerji Verileri', 
+      'motor-3': 'GM 3 Enerji Verileri'
     };
     
-    // ✅ ÇÖZÜM: Motor filtresini kontrol et - doğru sheet'i seç
-    let selectedMotorId = motorId; // Varsayılan
+    // Motor filtresini kontrol et - doğru sheet'i seç
+    let selectedMotorId = motorId;
     if (payload.motor) {
       selectedMotorId = payload.motor;
       Logger.log(`Motor filtresi: ${selectedMotorId}`);
@@ -65,105 +69,58 @@ function doPost(e) {
     // Spreadsheet kontrolü - yoksa oluştur
     let ss = SpreadsheetApp.getActiveSpreadsheet();
     if (!ss) {
-      ss = SpreadsheetApp.create('Kojenerasyon Kojen Motor Verileri');
+      ss = SpreadsheetApp.create('Kojenerasyon Kojen Enerji Verileri');
     }
     
     let sheet = ss.getSheetByName(sheetName);
     
     // Sheet yoksa oluştur
     if (!sheet) {
-      sheet = createMotorSheet(ss, sheetName, motorId);
+      sheet = createEnergySheet(ss, sheetName, motorId);
     }
     
     // HER DURUMDA header kontrolü yap
-    if (module === 'kojen_motor') {
-      ensureHeaders(sheet, motorId);
-    }
-    
-    // Kayıt kontrolü yap
-    const existingRecord = findExistingRecord(sheet, payload);
-    if (existingRecord) {
-      return ContentService.createTextOutput(JSON.stringify({
-        success: false,
-        message: 'Bu tarih, vardiya ve saat için kayıt zaten var',
-        existingRow: existingRecord.row,
-        motorId: motorId
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    const headers = [
-      'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-      'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-      'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-      'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
-      'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
-      'Orijinal Personel', 'Değiştirilen Değerler'
-    ];
-    
-    // Spreadsheet kontrolü - yoksa oluştur
-    const lastRow = sheet.getLastRow();
-    
-    if (lastRow === 0) {
-      Logger.log('Sheet boş, header ekleniyor...');
-      
-      // Headerları ekle
-      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-      sheet.getRange(1, 1, 1, headers.length)
-        .setFontWeight("bold")
-        .setBackground("#f0f0f0");
-      
-      // İlk satırı dondur
-      sheet.setFrozenRows(1);
-      
-      // Kolon genişliklerini ayarla
-      for (let i = 1; i <= headers.length; i++) {
-        sheet.autoResizeColumn(i);
-      }
-      
-      Logger.log('Headerlar eklendi, toplam ' + headers.length + ' kolon');
-    } else {
-      // Sheet doluysa ilk hücreyi kontrol et
-      const firstCell = sheet.getRange(1,1).getValue();
-      if (firstCell !== 'ID') {
-        throw new Error('Sheet dolu ama header bozuk! Manuel kontrol gerekli.');
-      } else {
-        Logger.log('Headerlar zaten mevcut ve doğru');
-      }
+    if (module === 'kojen_enerji' || module === 'kojen-enerji') {
+      ensureEnergyHeaders(sheet, motorId);
     }
     
     let result;
     
     switch (action) {
       case 'save':
-        result = saveKojenMotorRecord(sheet, payload);
+        result = saveKojenEnergyRecord(sheet, payload);
+        break;
+        
+      case 'save_motor_devre_disi':
+        result = saveMotorDevreDisiRecord(sheet, payload);
         break;
         
       case 'save_bulk':
-        result = saveBulkKojenMotorRecords(sheet, payload);
+        result = saveBulkKojenEnergyRecords(sheet, payload);
         break;
         
       case 'get':
-        result = getKojenMotorRecords(sheet, payload.filters || {});
+        result = getKojenEnergyRecords(sheet, payload.filters || {});
         break;
         
       case 'check':
-        result = checkKojenMotorRecord(sheet, payload);
+        result = checkKojenEnergyRecord(sheet, payload);
         break;
         
       case 'update':
         if (!payload.id) {
           result = { success: false, error: 'Update için ID gerekli' };
         } else {
-          result = updateKojenMotorRecord(sheet, payload.id, payload);
+          result = updateKojenEnergyRecord(sheet, payload.id, payload);
         }
         break;
         
       case 'delete':
-        result = deleteKojenMotorRecord(sheet, payload.id);
+        result = deleteKojenEnergyRecord(sheet, payload.id);
         break;
         
       case 'test':
-        result = { success: true, message: 'Kojen motor bağlantısı başarılı', timestamp: new Date().toISOString() };
+        result = { success: true, message: 'Kojen enerji bağlantısı başarılı', timestamp: new Date().toISOString() };
         break;
         
       default:
@@ -174,7 +131,7 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
-    Logger.log('Kojen motor hatası: ' + error.toString());
+    Logger.log('Kojen enerji hatası: ' + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString(),
@@ -184,17 +141,16 @@ function doPost(e) {
 }
 
 /**
- * Yeni motor sayfası oluştur
+ * Yeni enerji sayfası oluştur
  */
-function createMotorSheet(ss, sheetName, motorId) {
+function createEnergySheet(ss, sheetName, motorId) {
   const sheet = ss.insertSheet(sheetName);
   
   // Başlıkları oluştur
   const headers = [
-    'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-    'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-    'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-    'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
+    'ID', 'Tarih', 'Vardiya', 'Saat', 'Aydem Voltaji', 'Aktif Güç', 'Reaktif Güç', 
+    'Cos φ', 'Ortalama Akım', 'Ortalama Gerilim', 'Nötr Akımı', 'Tahrik Gerilimi',
+    'Toplam Aktif Enerji', 'Çalışma Saati', 'Kalkış Sayısı', 'Motor Durumu',
     'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
     'Orijinal Personel', 'Değiştirilen Değerler'
   ];
@@ -213,19 +169,18 @@ function createMotorSheet(ss, sheetName, motorId) {
     sheet.autoResizeColumn(i);
   }
   
-  Logger.log('Yeni motor sayfası oluşturuldu: ' + sheetName);
+  Logger.log('Yeni enerji sayfası oluşturuldu: ' + sheetName);
   return sheet;
 }
 
 /**
  * Header kontrolü yap
  */
-function ensureHeaders(sheet, motorId) {
+function ensureEnergyHeaders(sheet, motorId) {
   const headers = [
-    'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-    'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-    'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-    'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
+    'ID', 'Tarih', 'Vardiya', 'Saat', 'Aydem Voltaji', 'Aktif Güç', 'Reaktif Güç', 
+    'Cos φ', 'Ortalama Akım', 'Ortalama Gerilim', 'Nötr Akımı', 'Tahrik Gerilimi',
+    'Toplam Aktif Enerji', 'Çalışma Saati', 'Kalkış Sayısı', 'Motor Durumu',
     'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
     'Orijinal Personel', 'Değiştirilen Değerler'
   ];
@@ -254,7 +209,7 @@ function ensureHeaders(sheet, motorId) {
 /**
  * Mevcut kaydı ara
  */
-function findExistingRecord(sheet, data) {
+function findExistingEnergyRecord(sheet, data) {
   const lastRow = sheet.getLastRow();
   
   if (lastRow <= 1) {
@@ -280,15 +235,223 @@ function findExistingRecord(sheet, data) {
 }
 
 /**
- * Kojen motor tek kayıt kaydet
+ * Motor devre dışı kaydet
  */
-function saveKojenMotorRecord(sheet, data) {
-  // ÇÖZÜM: Lock key'i fonksiyon başında tanımla
+function saveMotorDevreDisiRecord(sheet, data) {
+  try {
+    const lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(30000);
+    } catch (e) {
+      return {
+        success: false,
+        error: 'Kilit alınamadı, lütfen tekrar deneyin'
+      };
+    }
+    
+    const headers = getKojenEnergyHeaders(sheet);
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    // Tarih ve saat kontrolü
+    const tarih = data.tarih || Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd/MM/yyyy');
+    const saat = data.saat || new Date().getHours().toString().padStart(2, '0') + ':00:00';
+    const vardiya = data.vardiya || 'GÜNDÜZ';
+    
+    // allData varsa işle, yoksa boş veri oluştur
+    let allData = {};
+    if (data.allData) {
+      try {
+        allData = JSON.parse(data.allData);
+      } catch (e) {
+        Logger.log('allData parse hatası: ' + e.toString());
+        allData = {};
+      }
+    }
+    
+    // Mevcut kaydı kontrol et
+    let existingRecord = null;
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const existingDate = row[headers.indexOf('Tarih')];
+      const existingVardiya = row[headers.indexOf('Vardiya')];
+      let existingSaat = row[headers.indexOf('Saat')];
+      
+      // Saat formatını normalize et (17 veya 17:00:00)
+      if (existingSaat && existingSaat.toString().includes(':')) {
+        existingSaat = parseInt(existingSaat.toString().split(':')[0]);
+      } else {
+        existingSaat = parseInt(existingSaat);
+      }
+      
+      // Gelen saati de normalize et
+      let normalizedInputSaat = saat;
+      if (saat && saat.toString().includes(':')) {
+        normalizedInputSaat = parseInt(saat.toString().split(':')[0]);
+      } else {
+        normalizedInputSaat = parseInt(saat);
+      }
+      
+      if (existingDate === tarih && existingVardiya === vardiya && existingSaat === normalizedInputSaat) {
+        existingRecord = {
+          row: i + 1,
+          data: row
+        };
+        break;
+      }
+    }
+    
+    if (existingRecord) {
+      // Mevcut kayıt varsa, motor durumunu güncelle
+      const rowIndex = existingRecord.row;
+      sheet.getRange(rowIndex, headers.indexOf('Motor Durumu') + 1).setValue('DEVRE DIŞI');
+      sheet.getRange(rowIndex, headers.indexOf('Güncelleme Zamanı') + 1).setValue(
+        new Date().toLocaleString('tr-TR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        })
+      );
+      sheet.getRange(rowIndex, headers.indexOf('Güncelleyen') + 1).setValue(
+        data.guncelleyen || data.operator || data.personel || 'System'
+      );
+      sheet.getRange(rowIndex, headers.indexOf('Değiştirilen Değerler') + 1).setValue(
+        'Motor Durumu: DEVRE DIŞI'
+      );
+      
+      lock.releaseLock();
+      
+      return {
+        success: true,
+        message: 'Mevcut kayıt güncellendi - motor devre dışı',
+        action: 'updated',
+        timestamp: new Date().toISOString()
+      };
+    } else {
+      // Yeni kayıt oluştur - allData'dan gelen verileri kullan
+      const newRow = [];
+      headers.forEach(header => {
+        let value = '';
+        
+        // Header ve data eşleşmesi
+        switch(header) {
+          case 'ID':
+            value = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+            break;
+          case 'Tarih':
+            value = tarih;
+            break;
+          case 'Vardiya':
+            value = vardiya;
+            break;
+          case 'Saat':
+            value = saat;
+            break;
+          case 'Motor Durumu':
+            value = 'DEVRE DIŞI';
+            break;
+          case 'Kayıt Zamanı':
+            value = new Date().toLocaleString('tr-TR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+            break;
+          case 'Güncelleyen':
+            value = data.guncelleyen || data.operator || data.personel || 'System';
+            break;
+          default:
+            // allData'dan gelen verileri kullan
+            const hourKey = saat.replace(':00:00', '');
+            if (allData[hourKey]) {
+              switch(header) {
+                case 'AYDEM-VOLTAJI':
+                  value = allData[hourKey]['aydem-voltaji'] || '';
+                  break;
+                case 'AKTİF-GÜÇ':
+                  value = allData[hourKey]['aktif-guc'] || '';
+                  break;
+                case 'REAKTİF-GÜÇ':
+                  value = allData[hourKey]['reaktif-guc'] || '';
+                  break;
+                case 'COS-Fİ':
+                  value = allData[hourKey]['cos-fi'] || '';
+                  break;
+                case 'ORT-AKIM':
+                  value = allData[hourKey]['ort-akim'] || '';
+                  break;
+                case 'ORT-GERİLİM':
+                  value = allData[hourKey]['ort-gerilim'] || '';
+                  break;
+                case 'NÖTR-AKIMI':
+                  value = allData[hourKey]['notur-akimi'] || '';
+                  break;
+                case 'TAHRİK-GERİLİMİ':
+                  value = allData[hourKey]['tahrik-gerilimi'] || '';
+                  break;
+                case 'TOPALAM-AKTİF-ENERJİ':
+                  value = allData[hourKey]['toplam-aktif-enerji'] || '';
+                  break;
+                case 'ÇALIŞMA-SAATİ':
+                  value = allData[hourKey]['calisma-saati'] || '';
+                  break;
+                case 'KALKIŞ-SAYISI':
+                  value = allData[hourKey]['kalkis-sayisi'] || '';
+                  break;
+              }
+            }
+            break;
+        }
+        
+        newRow.push(value);
+      });
+      
+      // Yeni satırı ekle
+      const startRow = sheet.getLastRow() + 1;
+      sheet.getRange(startRow, 1, 1, newRow.length).setValues([newRow]);
+      
+      lock.releaseLock();
+      
+      return {
+        success: true,
+        message: 'Motor devre dışı kaydı oluşturuldu',
+        action: 'created',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+  } catch (error) {
+    if (typeof lock !== 'undefined' && lock) {
+      try {
+        lock.releaseLock();
+      } catch (e) {
+        Logger.log('Lock release hatası: ' + e.toString());
+      }
+    }
+    
+    Logger.log('saveMotorDevreDisiRecord hatası: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+/**
+ * Kojen enerji tek kayıt kaydet
+ */
+function saveKojenEnergyRecord(sheet, data) {
   const lockKey = sheet.getName() + '_save_lock';
   
   try {
     // Çoklu API çağrısını engelle
-    const globalLockKey = 'kojen_motor_global_save_lock';
+    const globalLockKey = 'kojen_enerji_global_save_lock';
     const globalLock = CacheService.getPublicCache().get(globalLockKey);
     
     if (globalLock !== null) {
@@ -298,7 +461,7 @@ function saveKojenMotorRecord(sheet, data) {
       };
     }
     
-    // Kilit oluştur - LockService kullan
+    // Kilit oluştur
     const lock = LockService.getScriptLock();
     try {
       lock.waitLock(30000); // 30 saniye bekle
@@ -309,11 +472,11 @@ function saveKojenMotorRecord(sheet, data) {
       };
     }
     
-    const headers = getKojenMotorHeaders(sheet);
+    const headers = getKojenEnergyHeaders(sheet);
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     
-    // ✅ ÇÖZÜM: Saat bazlı verileri işle
+    // Saat bazlı verileri işle
     let allData = {};
     try {
       allData = data.allData ? JSON.parse(data.allData) : {};
@@ -330,7 +493,7 @@ function saveKojenMotorRecord(sheet, data) {
     
     // Her saat için ayrı kayıt oluştur
     const results = [];
-    const newRows = []; // Performans için tüm yeni satırları burada topla
+    const newRows = [];
     
     // Saatleri al ve verileri işle
     Object.keys(allData).forEach(hour => {
@@ -339,7 +502,7 @@ function saveKojenMotorRecord(sheet, data) {
       // Boş saat verisi kontrolü
       if (!hourData || Object.keys(hourData).length === 0) {
         Logger.log('⚠️ Saat ' + hour + ' boş veya verisiz, atlanıyor');
-        return; // Boş saatleri atla
+        return;
       }
       
       Logger.log('✅ Saat ' + hour + ' için veri işleniyor: ' + JSON.stringify(hourData));
@@ -352,7 +515,7 @@ function saveKojenMotorRecord(sheet, data) {
         ...hourData
       };
       
-      // Çakışma kontrolü - values üzerinden yap (performanslı)
+      // Çakışma kontrolü
       let rowIndex = -1;
       for (let i = 1; i < values.length; i++) {
         const row = values[i];
@@ -368,7 +531,7 @@ function saveKojenMotorRecord(sheet, data) {
       }
       
       if (rowIndex === -1) {
-        // Yeni satır olarak hazırla - performans için toplu ekleme
+        // Yeni satır olarak hazırla
         const newRow = [];
         headers.forEach(header => {
           let value = '';
@@ -379,7 +542,7 @@ function saveKojenMotorRecord(sheet, data) {
               value = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
               break;
             case 'Tarih':
-              value = recordData.tarih || '';
+              value = recordData.tarih || Utilities.formatDate(new Date(), 'Europe/Istanbul', 'dd/MM/yyyy');
               break;
             case 'Vardiya':
               value = recordData.vardiya || '';
@@ -387,50 +550,41 @@ function saveKojenMotorRecord(sheet, data) {
             case 'Saat':
               value = recordData.saat || '';
               break;
-            case 'JEN-YATAK-DE':
-              value = recordData['jen-yatak-de'] || '';
+            case 'Aydem Voltaji':
+              value = recordData['aydem-voltaji'] || '';
               break;
-            case 'JEN-YATAK-NDE':
-              value = recordData['jen-yatak-nde'] || '';
+            case 'Aktif Güç':
+              value = recordData['aktif-guc'] || '';
               break;
-            case 'SOGUTMA-SICAKLIK':
-              value = recordData['sogutma-sicaklik'] || '';
+            case 'Reaktif Güç':
+              value = recordData['reaktif-guc'] || '';
               break;
-            case 'SOGUTMA-BASINC':
-              value = recordData['sogutma-basinc'] || '';
+            case 'Cos φ':
+              value = recordData['cos-fi'] || '';
               break;
-            case 'YAG-SICAKLIK':
-              value = recordData['yag-sicaklik'] || '';
+            case 'Ortalama Akım':
+              value = recordData['ort-akim'] || '';
               break;
-            case 'YAG-BASINC':
-              value = recordData['yag-basinc'] || '';
+            case 'Ortalama Gerilim':
+              value = recordData['ort-gerilim'] || '';
               break;
-            case 'SARJ-SICAKLIK':
-              value = recordData['sarj-sicaklik'] || '';
+            case 'Nötr Akımı':
+              value = recordData['notur-akimi'] || '';
               break;
-            case 'SARJ-BASINC':
-              value = recordData['sarj-basinc'] || '';
+            case 'Tahrik Gerilimi':
+              value = recordData['tahrik-gerilimi'] || '';
               break;
-            case 'GAZ-REGULATOR':
-              value = recordData['gaz-regulator'] || '';
+            case 'Toplam Aktif Enerji':
+              value = recordData['toplam-aktif-enerji'] || '';
               break;
-            case 'MAKINE-SICAKLIK':
-              value = recordData['makine-sicaklik'] || '';
+            case 'Çalışma Saati':
+              value = recordData['calisma-saati'] || '';
               break;
-            case 'KARTER-BASINC':
-              value = recordData['karter-basinc'] || '';
+            case 'Kalkış Sayısı':
+              value = recordData['kalkis-sayisi'] || '';
               break;
-            case 'ON-KAMARA-BASINC':
-              value = recordData['on-kamara-basinc'] || '';
-              break;
-            case 'SARGI-1':
-              value = recordData['sargi-1'] || '';
-              break;
-            case 'SARGI-2':
-              value = recordData['sargi-2'] || '';
-              break;
-            case 'SARGI-3':
-              value = recordData['sargi-3'] || '';
+            case 'Motor Durumu':
+              value = recordData['motor-durumu'] || '';
               break;
             case 'Kayıt Zamanı':
               value = new Date().toLocaleString('tr-TR', {
@@ -446,7 +600,8 @@ function saveKojenMotorRecord(sheet, data) {
               value = '';
               break;
             case 'Güncelleyen':
-              value = 'System';
+              // Frontend'den gelen kullanıcı bilgisi veya session bilgisi
+              value = recordData.guncelleyen || recordData.operator || recordData.personel || 'System';
               break;
             case 'Orijinal Kayıt Zamanı':
               value = '';
@@ -470,11 +625,11 @@ function saveKojenMotorRecord(sheet, data) {
       }
     });
     
-    // ✅ PERFORMANS: Tüm yeni satırları tek seferde ekle
+    // Tüm yeni satırları tek seferde ekle
     if (newRows.length > 0) {
       const startRow = sheet.getLastRow() + 1;
       sheet.getRange(startRow, 1, newRows.length, newRows[0].length).setValues(newRows);
-      Logger.log('✅ ' + newRows.length + ' yeni satır toplu eklendi (performanslı)');
+      Logger.log('✅ ' + newRows.length + ' yeni satır toplu eklendi');
     }
     
     // Kilidi serbest bırak
@@ -482,7 +637,7 @@ function saveKojenMotorRecord(sheet, data) {
     
     return {
       success: true,
-      message: `Kojen motor verileri başarıyla kaydedildi (${results.length} saat)`,
+      message: `Kojen enerji verileri başarıyla kaydedildi (${results.length} saat)`,
       results: results,
       timestamp: new Date().toISOString()
     };
@@ -497,7 +652,7 @@ function saveKojenMotorRecord(sheet, data) {
       }
     }
     
-    Logger.log('saveKojenMotorRecord hatası: ' + error.toString());
+    Logger.log('saveKojenEnergyRecord hatası: ' + error.toString());
     return {
       success: false,
       error: error.toString()
@@ -506,17 +661,17 @@ function saveKojenMotorRecord(sheet, data) {
 }
 
 /**
- * Kojen motor çoklu kayıt kaydet
+ * Kojen enerji çoklu kayıt kaydet
  */
-function saveBulkKojenMotorRecords(sheet, data) {
+function saveBulkKojenEnergyRecords(sheet, data) {
   try {
     const records = data.records || [];
     let successCount = 0;
     let errorCount = 0;
     let errors = [];
     
-    // ✅ ÇÖZÜM: Global lock'i sadece bulk işlem başında al
-    const globalLockKey = 'kojen_motor_global_save_lock';
+    // Global lock'i sadece bulk işlem başında al
+    const globalLockKey = 'kojen_enerji_global_save_lock';
     const globalLock = CacheService.getPublicCache().get(globalLockKey);
     
     if (globalLock !== null) {
@@ -527,14 +682,13 @@ function saveBulkKojenMotorRecords(sheet, data) {
       };
     }
     
-    // Global kilidi oluştur (tüm bulk işlem için)
+    // Global kilidi oluştur
     CacheService.getPublicCache().put(globalLockKey, 'locked', 60);
     
     for (let i = 0; i < records.length; i++) {
       const record = records[i];
       
-      // ✅ ÇÖZÜM: Her kayıt için ayrı lock kullan
-      const recordLockKey = `kojen_motor_record_${record.id}_${Date.now()}`;
+      const recordLockKey = `kojen_enerji_record_${record.id}_${Date.now()}`;
       const recordLock = CacheService.getPublicCache().get(recordLockKey);
       
       if (recordLock !== null) {
@@ -546,7 +700,7 @@ function saveBulkKojenMotorRecords(sheet, data) {
       // Kayıt kilidi oluştur
       CacheService.getPublicCache().put(recordLockKey, 'locked', 30);
       
-      const result = saveKojenMotorRecord(sheet, record);
+      const result = saveKojenEnergyRecord(sheet, record);
       
       // Kayıt kilidini serbest bırak
       CacheService.getPublicCache().remove(recordLockKey);
@@ -572,7 +726,7 @@ function saveBulkKojenMotorRecords(sheet, data) {
     };
   } catch (error) {
     // Global kilidi serbest bırak
-    CacheService.getPublicCache().remove('kojen_motor_global_save_lock');
+    CacheService.getPublicCache().remove('kojen_enerji_global_save_lock');
     
     return {
       success: false,
@@ -582,11 +736,10 @@ function saveBulkKojenMotorRecords(sheet, data) {
 }
 
 /**
- * Kojen motor kayıtları getir
+ * Kojen enerji kayıtları getir
  */
-function getKojenMotorRecords(sheet, filters = {}) {
+function getKojenEnergyRecords(sheet, filters = {}) {
   try {
-    // ✅ ÇÖZÜM: Boş sheet kontrolü
     const lastRow = sheet.getLastRow();
     if (lastRow <= 1) {
       Logger.log('Sheet boş, kayıt yok');
@@ -598,11 +751,10 @@ function getKojenMotorRecords(sheet, filters = {}) {
       };
     }
     
-    // ✅ ÇÖZÜM: Sheet adını kontrol et - hangi motorun verisi geldiğini anla
     const sheetName = sheet.getName();
     Logger.log(`Sheet adı: ${sheetName}`);
     
-    const headers = getKojenMotorHeaders(sheet);
+    const headers = getKojenEnergyHeaders(sheet);
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     
@@ -632,7 +784,7 @@ function getKojenMotorRecords(sheet, filters = {}) {
               'dd/MM/yyyy'
             );
           } else if (header === 'Saat') {
-            // Saat formatını sadece saat olarak döndür (örn: 6 veya 8)
+            // Saat formatını sadece saat olarak döndür
             const hour = cellValue.getHours();
             cellValue = hour.toString();
           }
@@ -646,11 +798,10 @@ function getKojenMotorRecords(sheet, filters = {}) {
     
     Logger.log(`Toplam ${records.length} kayıt bulundu (sheet: ${sheetName})`);
     
-    // ✅ ÇÖZÜM: Motor filtresi - sadece ilgili motorun verisini döndür
+    // Motor filtresi
     if (filters.motor) {
       Logger.log(`Motor filtresi: ${filters.motor}`);
       
-      // Sheet adına göre motoru belirle
       let sheetMotor = null;
       if (sheetName.includes('GM 1') || sheetName.includes('motor-1')) {
         sheetMotor = 'motor-1';
@@ -662,7 +813,6 @@ function getKojenMotorRecords(sheet, filters = {}) {
       
       Logger.log(`Sheet motor: ${sheetMotor}, İstenen motor: ${filters.motor}`);
       
-      // Eğer motor uyuşmuyorsa boş liste döndür
       if (sheetMotor !== filters.motor) {
         Logger.log(`Motor uyuşmuyor, boş liste döndürülüyor: ${sheetMotor} != ${filters.motor}`);
         return {
@@ -678,12 +828,10 @@ function getKojenMotorRecords(sheet, filters = {}) {
     if (filters.tarih) {
       records = records.filter(record => {
         const recordDate = record['Tarih'] ? record['Tarih'].toString() : '';
-        // Filter tarihini de dd/MM/yyyy formatına çevir
         let filterDate = filters.tarih.toString();
         if (filters.tarih instanceof Date) {
           filterDate = Utilities.formatDate(filters.tarih, 'Europe/Istanbul', 'dd/MM/yyyy');
         } else {
-          // String formatını normalize et
           filterDate = filters.tarih.toString()
             .replace(/\./g, '/')
             .replace(/-/g, '/')
@@ -695,7 +843,6 @@ function getKojenMotorRecords(sheet, filters = {}) {
               filterDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd/MM/yyyy');
             }
           } catch (e) {
-            // Formatlama hatası olursa orijinal string kullan
             Logger.log('Filter tarih formatlama hatası: ' + e.toString());
           }
         }
@@ -716,21 +863,6 @@ function getKojenMotorRecords(sheet, filters = {}) {
       });
     }
     
-    // Tarih aralığı filtreleme
-    if (filters.start_date && filters.end_date) {
-      records = records.filter(record => {
-        const recordDate = new Date(record['Tarih']);
-        const startDate = new Date(filters.start_date);
-        const endDate = new Date(filters.end_date);
-        return recordDate >= startDate && recordDate <= endDate;
-      });
-    }
-    
-    // Son kayıtları getir
-    if (filters.recent && filters.limit) {
-      records = records.slice(-filters.limit).reverse();
-    }
-    
     Logger.log(`Filtrelenmiş kayıt sayısı: ${records.length} (motor: ${filters.motor})`);
     
     return {
@@ -740,7 +872,7 @@ function getKojenMotorRecords(sheet, filters = {}) {
       timestamp: new Date().toISOString()
     };
   } catch (error) {
-    Logger.log('getKojenMotorRecords hatası: ' + error.toString());
+    Logger.log('getKojenEnergyRecords hatası: ' + error.toString());
     return {
       success: false,
       error: error.toString(),
@@ -750,47 +882,43 @@ function getKojenMotorRecords(sheet, filters = {}) {
 }
 
 /**
- * Kojen motor kayıt kontrolü
+ * Kojen enerji kayıt kontrolü
  */
-function checkKojenMotorRecord(sheet, data) {
+function checkKojenEnergyRecord(sheet, data) {
   try {
     const tarih = data.tarih;
     const vardiya = data.vardiya;
     const saat = data.saat;
     const motor = data.motor;
     
-    // ✅ ÇÖZÜM: Boş sheet kontrolü
     const lastRow = sheet.getLastRow();
     if (lastRow <= 1) {
       Logger.log('Sheet boş, kayıt yok');
       return {
         success: true,
         exists: false,
+        results: [], // Boş results array
         message: 'Sheet boş - kayıt yok'
       };
     }
     
-    // Tarih formatını normalize et - Utilities.formatDate kullan (dd/MM/yyyy formatında)
+    // Tarih formatını normalize et
     let normalizedTargetDate = tarih.toString();
     
-    // Eğer tarih Date objesi ise formatla
     if (tarih instanceof Date) {
       normalizedTargetDate = Utilities.formatDate(tarih, 'Europe/Istanbul', 'dd/MM/yyyy');
     } else {
-      // String ise normalize et
       normalizedTargetDate = tarih.toString()
         .replace(/\./g, '/')
         .replace(/-/g, '/')
         .trim();
       
-      // Eğer format farklıysa tekrar formatla
       try {
         const parsedDate = new Date(normalizedTargetDate);
         if (!isNaN(parsedDate.getTime())) {
           normalizedTargetDate = Utilities.formatDate(parsedDate, 'Europe/Istanbul', 'dd/MM/yyyy');
         }
       } catch (e) {
-        // Formatlama hatası olursa orijinal string kullan
         Logger.log('Tarih formatlama hatası, orijinal kullanılıyor: ' + e.toString());
       }
     }
@@ -803,15 +931,20 @@ function checkKojenMotorRecord(sheet, data) {
     };
     const normalizedVardiyaTipi = vardiyaTipMap[vardiya] || vardiya;
     
-    // Saati normalize et
-    const normalizedSaat = saat.toString().replace(':00', '').trim();
+    // Saati normalize et - HH:00:00 formatını destekle
+    let normalizedSaat = saat;
+    if (saat && saat.toString().includes(':')) {
+      // HH:00:00 formatından saati çıkar
+      normalizedSaat = parseInt(saat.toString().split(':')[0]);
+    } else {
+      normalizedSaat = parseInt(saat);
+    }
     
     // Sheet'den verileri al
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     const headers = values[0];
     
-    // ✅ ÇÖZÜM: Header kontrolü
     if (!headers || headers.length === 0 || headers[0] !== 'ID') {
       Logger.log('Header bulunamadı, kayıt kontrolü yapılamıyor');
       return {
@@ -845,6 +978,7 @@ function checkKojenMotorRecord(sheet, data) {
             return {
               success: true,
               exists: true,
+              results: [values[mid]], // results array olarak döndür
               record: {
                 row: mid + 1,
                 data: values[mid]
@@ -860,10 +994,11 @@ function checkKojenMotorRecord(sheet, data) {
     return {
       success: true,
       exists: false,
+      results: [], // Boş results array
       message: 'Kayıt bulunamadı'
     };
   } catch (error) {
-    Logger.log('checkKojenMotorRecord hatası: ' + error.toString());
+    Logger.log('checkKojenEnergyRecord hatası: ' + error.toString());
     return {
       success: false,
       error: error.toString()
@@ -872,11 +1007,11 @@ function checkKojenMotorRecord(sheet, data) {
 }
 
 /**
- * Kojen motor kayıt güncelle
+ * Kojen enerji kayıt güncelle
  */
-function updateKojenMotorRecord(sheet, recordId, data) {
+function updateKojenEnergyRecord(sheet, recordId, data) {
   try {
-    const headers = getKojenMotorHeaders(sheet);
+    const headers = getKojenEnergyHeaders(sheet);
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     
@@ -884,7 +1019,7 @@ function updateKojenMotorRecord(sheet, recordId, data) {
     let rowIndex = -1;
     for (let i = 1; i < values.length; i++) {
       if (values[i][headers.indexOf('ID')] === recordId) {
-        rowIndex = i + 1; // 1-based index
+        rowIndex = i + 1;
         break;
       }
     }
@@ -893,28 +1028,24 @@ function updateKojenMotorRecord(sheet, recordId, data) {
       return { success: false, error: 'Kayıt bulunamadı' };
     }
     
-    // Alan map'i - frontend ↔ apps script uyumlu
+    // Alan map'i
     const fieldMap = {
-      'jen-yatak-de': 'JEN-YATAK-DE',
-      'jen-yatak-nde': 'JEN-YATAK-NDE',
-      'sogutma-sicaklik': 'SOGUTMA-SICAKLIK',
-      'sogutma-basinc': 'SOGUTMA-BASINC',
-      'yag-sicaklik': 'YAG-SICAKLIK',
-      'yag-basinc': 'YAG-BASINC',
-      'sarj-sicaklik': 'SARJ-SICAKLIK',
-      'sarj-basinc': 'SARJ-BASINC',
-      'gaz-regulator': 'GAZ-REGULATOR',
-      'makine-sicaklik': 'MAKINE-SICAKLIK',
-      'karter-basinc': 'KARTER-BASINC',
-      'on-kamara-basinc': 'ON-KAMARA-BASINC',
-      'sargi-1': 'SARGI-1',
-      'sargi-2': 'SARGI-2',
-      'sargi-3': 'SARGI-3'
+      'aydem-voltaji': 'Aydem Voltaji',
+      'aktif-guc': 'Aktif Güç',
+      'reaktif-guc': 'Reaktif Güç',
+      'cos-fi': 'Cos φ',
+      'ort-akim': 'Ortalama Akım',
+      'ort-gerilim': 'Ortalama Gerilim',
+      'notur-akimi': 'Nötr Akımı',
+      'tahrik-gerilimi': 'Tahrik Gerilimi',
+      'toplam-aktif-enerji': 'Toplam Aktif Enerji',
+      'calisma-saati': 'Çalışma Saati',
+      'kalkis-sayisi': 'Kalkış Sayısı',
+      'motor-durumu': 'Motor Durumu'
     };
     
     // Değişiklikleri takip et
     const updatedFields = [];
-    const originalTimestamp = new Date().toISOString();
     
     // Map'li güncelle
     Object.keys(fieldMap).forEach(key => {
@@ -935,19 +1066,19 @@ function updateKojenMotorRecord(sheet, recordId, data) {
     
     // Güncelleme zamanını ayarla
     sheet.getRange(rowIndex, headers.indexOf('Güncelleme Zamanı') + 1).setValue(new Date().toLocaleString('tr-TR'));
-    sheet.getRange(rowIndex, headers.indexOf('Güncelleyen') + 1).setValue('System'); // Utils.getSession() yerine basit değer
+    sheet.getRange(rowIndex, headers.indexOf('Güncelleyen') + 1).setValue('System');
     sheet.getRange(rowIndex, headers.indexOf('Değiştirilen Değerler') + 1).setValue(updatedFields.join(', '));
     
     return {
       success: true,
-      message: 'Kojen motor kaydı başarıyla güncellendi',
+      message: 'Kojen enerji kaydı başarıyla güncellendi',
       recordId: recordId,
       updatedFields: updatedFields,
       timestamp: new Date().toISOString()
     };
     
   } catch (error) {
-    Logger.log('updateKojenMotorRecord hatası: ' + error.toString());
+    Logger.log('updateKojenEnergyRecord hatası: ' + error.toString());
     
     return {
       success: false,
@@ -958,11 +1089,11 @@ function updateKojenMotorRecord(sheet, recordId, data) {
 }
 
 /**
- * Kojen motor kayıt sil
+ * Kojen enerji kayıt sil
  */
-function deleteKojenMotorRecord(sheet, recordId) {
+function deleteKojenEnergyRecord(sheet, recordId) {
   try {
-    const headers = getKojenMotorHeaders(sheet);
+    const headers = getKojenEnergyHeaders(sheet);
     const idColumnIndex = headers.indexOf('ID');
     
     if (idColumnIndex === -1) {
@@ -976,7 +1107,7 @@ function deleteKojenMotorRecord(sheet, recordId) {
     let rowIndex = -1;
     for (let i = 1; i < values.length; i++) {
       if (values[i][idColumnIndex] === recordId) {
-        rowIndex = i + 1; // 1-based index
+        rowIndex = i + 1;
         break;
       }
     }
@@ -990,7 +1121,7 @@ function deleteKojenMotorRecord(sheet, recordId) {
     
     return {
       success: true,
-      message: 'Kojen motor kaydı başarıyla silindi',
+      message: 'Kojen enerji kaydı başarıyla silindi',
       recordId: recordId,
       timestamp: new Date().toISOString()
     };
@@ -1003,20 +1134,18 @@ function deleteKojenMotorRecord(sheet, recordId) {
 }
 
 /**
- * Kojen motor sheet headers'ını getir
+ * Kojen enerji sheet headers'ını getir
  */
-function getKojenMotorHeaders(sheet) {
+function getKojenEnergyHeaders(sheet) {
   try {
     const lastCol = sheet.getLastColumn();
     
-    // Boş sheet kontrolü
     if (lastCol === 0) {
       console.log('Sheet boş, manuel başlıklar dönülüyor');
       return [
-        'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-        'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-        'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-        'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
+        'ID', 'Tarih', 'Vardiya', 'Saat', 'Aydem Voltaji', 'Aktif Güç', 'Reaktif Güç', 
+        'Cos φ', 'Ortalama Akım', 'Ortalama Gerilim', 'Nötr Akımı', 'Tahrik Gerilimi',
+        'Toplam Aktif Enerji', 'Çalışma Saati', 'Kalkış Sayısı', 'Motor Durumu',
         'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
         'Orijinal Personel', 'Değiştirilen Değerler'
       ];
@@ -1025,14 +1154,12 @@ function getKojenMotorHeaders(sheet) {
     const headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
     const headers = headerRow.map(header => header.toString().trim());
     
-    // Başlıkların geçerli olup olmadığını kontrol et
     if (!headers || headers.length === 0 || headers[0] !== 'ID') {
       console.log('Başlıklar geçersiz, manuel başlıklar dönülüyor');
       return [
-        'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-        'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-        'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-        'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
+        'ID', 'Tarih', 'Vardiya', 'Saat', 'Aydem Voltaji', 'Aktif Güç', 'Reaktif Güç', 
+        'Cos φ', 'Ortalama Akım', 'Ortalama Gerilim', 'Nötr Akımı', 'Tahrik Gerilimi',
+        'Toplam Aktif Enerji', 'Çalışma Saati', 'Kalkış Sayısı', 'Motor Durumu',
         'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
         'Orijinal Personel', 'Değiştirilen Değerler'
       ];
@@ -1042,13 +1169,11 @@ function getKojenMotorHeaders(sheet) {
     return headers;
     
   } catch (error) {
-    console.log('getKojenMotorHeaders hatası:', error);
-    // Hata durumunda da manuel başlıklar dön
+    console.log('getKojenEnergyHeaders hatası:', error);
     return [
-      'ID', 'Tarih', 'Vardiya', 'Saat', 'JEN-YATAK-DE', 'JEN-YATAK-NDE', 
-      'SOGUTMA-SICAKLIK', 'SOGUTMA-BASINC', 'YAG-SICAKLIK', 'YAG-BASINC',
-      'SARJ-SICAKLIK', 'SARJ-BASINC', 'GAZ-REGULATOR', 'MAKINE-SICAKLIK',
-      'KARTER-BASINC', 'ON-KAMARA-BASINC', 'SARGI-1', 'SARGI-2', 'SARGI-3',
+      'ID', 'Tarih', 'Vardiya', 'Saat', 'Aydem Voltaji', 'Aktif Güç', 'Reaktif Güç', 
+      'Cos φ', 'Ortalama Akım', 'Ortalama Gerilim', 'Nötr Akımı', 'Tahrik Gerilimi',
+      'Toplam Aktif Enerji', 'Çalışma Saati', 'Kalkış Sayısı', 'Motor Durumu',
       'Kayıt Zamanı', 'Güncelleme Zamanı', 'Güncelleyen', 'Orijinal Kayıt Zamanı',
       'Orijinal Personel', 'Değiştirilen Değerler'
     ];
@@ -1061,9 +1186,9 @@ function getKojenMotorHeaders(sheet) {
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     success: true,
-    message: 'Kojen motor Google Sheets App Script çalışıyor',
+    message: 'Kojen enerji Google Sheets App Script çalışıyor',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    module: 'kojen_motor'
+    module: 'kojen_enerji'
   })).setMimeType(ContentService.MimeType.JSON);
 }

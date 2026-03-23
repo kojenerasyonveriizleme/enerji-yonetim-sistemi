@@ -33,7 +33,11 @@ const EnerjiModulu = {
      * Modülü başlat
      */
     init: function() {
-        // console.log('🔌 Enerji modülü başlatılıyor...'); // Gizlendi
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         this.bindEvents();
         this.setCurrentDateTime();
         this.createCurrentHourInput(); // Otomatik input oluştur
@@ -43,6 +47,11 @@ const EnerjiModulu = {
      * Event listener'ları bağla (butonlar kaldırıldı)
      */
     bindEvents: function() {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         // Tarih değişimi
         document.getElementById('hourly-date')?.addEventListener('change', () => {
             this.setCurrentDateTime();
@@ -60,6 +69,11 @@ const EnerjiModulu = {
      * Otomatik güncel saat input'u oluştur
      */
     createCurrentHourInput: function() {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         const currentHour = this.getCurrentHour()[0];
         const tableSection = document.querySelector('.table-section');
         const saatlikPage = document.getElementById('saatlik-page');
@@ -556,6 +570,11 @@ const EnerjiModulu = {
      * Mevcut tarih ve saati ayarla
      */
     setCurrentDateTime: function() {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         const now = new Date();
         const dateInput = document.getElementById('hourly-date');
         const shiftSelect = document.getElementById('hourly-shift');
@@ -638,6 +657,11 @@ const EnerjiModulu = {
      * Başlıkları güncelle (table-header kaldırıldı, input-card içinde gösteriliyor)
      */
     updateHeaders: function() {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         const currentHour = this.getCurrentHour()[0];
         
         // console.log('🔍 updateHeaders çalışıyor:', {
@@ -690,18 +714,12 @@ const EnerjiModulu = {
             // Başlık bulunamadı - log kaldırıldı
         }
         
-        const kojenMotorPageHeader = document.querySelector('#kojen-motor-page .page-header h1');
-        if (kojenMotorPageHeader) {
-            console.log('✅ Sayfa başlığı korundu: "Kojen Motor Verileri"');
+        // Enerji sayfa başlıklarını kontrol et
+        const energyPageHeader = document.querySelector('#energy-page .page-header h1');
+        if (energyPageHeader) {
+            console.log('✅ Sayfa başlığı korundu: "Enerji Verileri"');
         } else {
-            console.log('❌ Kojen Motor sayfa başlığı bulunamadı');
-        }
-        
-        const kojenEnerjiPageHeader = document.querySelector('#kojen-enerji-page .page-header h1');
-        if (kojenEnerjiPageHeader) {
-            console.log('✅ Sayfa başlığı korundu: "Kojen Enerji Verileri"');
-        } else {
-            console.log('❌ Kojen Enerji sayfa başlığı bulunamadı');
+            console.log('❌ Enerji sayfa başlığı bulunamadı');
         }
     },
     
@@ -709,6 +727,11 @@ const EnerjiModulu = {
      * Kayıtlı verileri yükle (localStorage + Google Sheets)
      */
     loadSavedRecords: function() {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         // console.log('📂 loadSavedRecords başlatıldı'); // Gizlendi
         // console.log('📊 Mevcut veri:', this.currentData); // Gizlendi
         
@@ -976,6 +999,11 @@ const EnerjiModulu = {
      * Google Sheets kayıtlarını işle (AKTİF)
      */
     processGoogleSheetsRecords: function(data) {
+        // Sadece energy-page aktifse çalıştır
+        if (!document.getElementById('energy-page')) {
+            return;
+        }
+        
         // console.log('📊 Google Sheets verileri işleniyor:', data); // Gizlendi
         
         const storageKey = `hourly_${this.currentData.date}_${this.currentData.shift}`;
@@ -998,7 +1026,6 @@ const EnerjiModulu = {
             
             // Eğer her iki değer de 0 ise, bu kaydı atla (boş kayıt)
             if (aktifDeger === 0 && reaktifDeger === 0) {
-                console.log('⏭️ 0 değerli kayıt atlanıyor - ID:', record.ID);
                 return;
             }
             

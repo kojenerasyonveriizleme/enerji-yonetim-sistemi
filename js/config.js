@@ -130,8 +130,8 @@ const CONFIG = {
         kullanici: 'https://script.google.com/macros/s/AKfycbwEPH0D2wkRVd9y483SQnaya4n3mr9dnYNlObREze-GPSjTO-fCxlZtkWDwrKkdTB7t/exec',
         gunluk_enerji_yeni: 'https://script.google.com/macros/s/AKfycbw-3C6Ulj7ou_rJ6rgmrKsalKRtE70xEUbKA8cH89JSmQAOmRPi6JAMxhSNsFpGNxUT/exec',
         gunluk_enerji_alternatif: 'https://script.google.com/macros/s/AKfycbwhyJ15sDwLFF1dFj-B4Mw7mcu2rpRNLo25w8d3-NQyhpEQD_8UV8H782ty53hyF6bU/exec',
-        kojen_motor: 'https://script.google.com/macros/s/AKfycbwPecu7487VCknFB7Y2e2Fu-28CGTYijpI24EYZQoeAu-Tzx1EoeVzGYpd829vhVFM/exec',
-        kojen_enerji: 'https://script.google.com/macros/s/AKfycbx7EwXi-E1OI_CZ9xh2aIEAnJtUPXXOi_zflH_Ka-xAkKTIQaiuZHe_6xJJ0SXtQ3Fq/exec',
+        kojen_motor: 'https://script.google.com/macros/s/AKfycbwzmZCFKXijEoGSJ6vM8dRzeoy_HqkGCSFNVpTgEvNOgq8UHIQlLnCYxBUIqKCq___C/exec',
+        kojen_enerji: 'https://script.google.com/macros/s/AKfycbwpBqJir6vJfOjXHoB027PwXnPo02JfWIns7V-XNiFere7bGwuBT3JiZCEmoN21_Ejn/exec',
         bakim: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Bakım takibi - en son deploy
         periodik: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Periyodik bakım - en son deploy
         normal: 'https://script.google.com/macros/s/AKfycbytgzzTrN5rJuWEQb2OQoLhXG7yI5qIWSMLXnHD04fDEPUGKAAD_G53Q8h2bWce-LiK/exec', // Normal bakım - en son deploy

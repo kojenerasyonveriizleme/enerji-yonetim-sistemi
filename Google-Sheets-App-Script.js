@@ -405,15 +405,8 @@ function getRecords(sheet, filters = {}) {
       const todayString = Utilities.formatDate(today, 'Europe/Istanbul', 'yyyy-MM-dd');
       
       records = records.filter(record => {
-        return record.Tarih === todayString; // record.date yerine record.Tarih kullan
+        return record.date === todayString;
       }).reverse();
-    }
-    
-    // Tarih filtreleme
-    if (filters.date) {
-      records = records.filter(record => {
-        return record.Tarih === filters.date; // record.date yerine record.Tarih kullan
-      });
     }
     
     if (filters.type === 'statistics') {
