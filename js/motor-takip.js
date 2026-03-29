@@ -557,15 +557,11 @@ async function loadRecords() {
         
         const response = await fetch(url, {
             method: 'GET',
-            mode: 'cors',
+            mode: 'no-cors',  // CORS sorununu cozmek icin
             cache: 'no-cache'
         });
         
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-        }
+        console.log('Response:', response);
         
         const result = await response.json();
         
