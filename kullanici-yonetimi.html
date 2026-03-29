@@ -3,242 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kullanıcı Yönetimi - Kojenerasyon Takip Sistemi</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/user-management.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>Takip Sistemi - Kullanıcı Yönetimi</title>
+    <link rel="stylesheet" href="css/kullanici-yonetimi.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="user-management-container">
-        <!-- Header -->
-        <header class="page-header">
-            <div class="header-content">
-                <h1>👥 Kullanıcı Yönetimi</h1>
-                <div class="header-actions">
-                    <button id="refresh-users-btn" class="btn btn-secondary">
-                        <span>🔄</span> Yenile
-                    </button>
-                    <button id="sync-users-btn" class="btn btn-success">
-                        <span>☁️</span> Senkronize Et
-                    </button>
-                    <button id="add-user-btn" class="btn btn-primary">
-                        <span>➕</span> Yeni Kullanıcı
-                    </button>
-                    <a href="index.html" class="btn btn-outline">
-                        <span>←</span> Ana Sayfa
+    <div class="dashboard-container">
+        <!-- Sol Navigasyon Menüsü -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/koruma_logo_1.png" alt="Logo" class="logo">
+                    <div class="company-name">KOJENERASYON</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="anasayfa.html" class="menu-link">
+                        <span class="menu-icon">🏠</span>
+                        <span class="menu-text">Ana Sayfa</span>
                     </a>
-                </div>
+                </li>
+                <li class="menu-item">
+                    <a href="saatlik-veri-giris.html" class="menu-link">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Saatlik Veri Girişi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="gunluk-veri-giris.html" class="menu-link">
+                        <span class="menu-icon">📆</span>
+                        <span class="menu-text">Günlük Veri Girişi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="buhar-verisi.html" class="menu-link">
+                        <span class="menu-icon">💨</span>
+                        <span class="menu-text">Buhar Verisi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="vardiya.html" class="menu-link">
+                        <span class="menu-icon">👥</span>
+                        <span class="menu-text">Vardiya Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="motor-takip.html" class="menu-link">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Motor Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="kojen-motor-veri.html" class="menu-link">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Kojen Motor Veri</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="kojen-enerji-veri.html" class="menu-link">
+                        <span class="menu-icon">⚡</span>
+                        <span class="menu-text">Kojen Enerji Veri</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="bakim-takibi.html" class="menu-link">
+                        <span class="menu-icon">🔧</span>
+                        <span class="menu-text">Bakım Takibi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="stok-takip.html" class="menu-link">
+                        <span class="menu-icon">📦</span>
+                        <span class="menu-text">Stok Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="kullanici-yonetimi.html" class="menu-link">
+                        <span class="menu-icon">👤</span>
+                        <span class="menu-text">Kullanıcı Yönetimi</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="sidebarLogout">Çıkış Yap</button>
             </div>
-            <p class="page-description">Sistem kullanıcılarını ekleyin, düzenleyin veya silin</p>
-        </header>
+        </nav>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-info">
-                    <span class="stat-value" id="total-users">0</span>
-                    <span class="stat-label">Toplam Kullanıcı</span>
+        <!-- Ana İçerik Alanı -->
+        <div class="main-content">
+            <!-- Üst Header -->
+            <header class="header">
+                <div class="header-top">
+                    <div class="company-info">
+                        <h1>KORUMA KLOR ALKALİ ŞİRKETLER GRUBU</h1>
+                        <h2>KOJENERASYON BÖLÜMÜ</h2>
+                    </div>
+                    <div class="user-info">
+                        <span class="welcome-text">Hoşgeldin, <span id="user-name-display">Admin</span></span>
+                        <button class="logout-btn" id="headerLogout">Çıkış Yap</button>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-info">
-                    <span class="stat-value" id="active-users">0</span>
-                    <span class="stat-label">Aktif Kullanıcı</span>
+                <div class="header-bottom">
+                    <h3>Kullanıcı Yönetimi</h3>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👑</div>
-                <div class="stat-info">
-                    <span class="stat-value" id="admin-users">0</span>
-                    <span class="stat-label">Admin</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">☁️</div>
-                <div class="stat-info">
-                    <span class="stat-value" id="sync-status">-</span>
-                    <span class="stat-label">Son Senkronizasyon</span>
-                </div>
-            </div>
-        </div>
+            </header>
 
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label for="filter-role">Rol:</label>
-                <select id="filter-role" class="filter-select">
-                    <option value="">Tüm Roller</option>
-                    <option value="admin">👑 Admin</option>
-                    <option value="operator">⚙️ Operator</option>
-                    <option value="user">👤 Kullanıcı</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="filter-status">Durum:</label>
-                <select id="filter-status" class="filter-select">
-                    <option value="">Tümü</option>
-                    <option value="active">✅ Aktif</option>
-                    <option value="inactive">❌ Pasif</option>
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Pasif</option>
-                </select>
-            </div>
-            <div class="filter-group search-group">
-                <input type="text" id="search-users" placeholder="Kullanıcı ara..." class="search-input">
-                <button id="clear-filters" class="btn btn-outline btn-sm">Filtreleri Temizle</button>
-            </div>
-        </div>
+            <!-- Ana İçerik -->
+            <main class="content">
+            <div class="admin-content">
+                <div class="page-header">
+                    <h2>Kullanıcılar</h2>
+                    <button class="add-user-btn" id="addUserBtn">
+                        <span>+</span> Yeni Kullanıcı Ekle
+                    </button>
+                </div>
 
-        <!-- Users Table -->
-        <div class="table-container">
-            <table id="users-table" class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Kullanıcı Adı</th>
-                        <th>Ad Soyad</th>
-                        <th>Rol</th>
-                        <th>Durum</th>
-                        <th>Oluşturma Tarihi</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody id="users-table-body">
-                    <!-- Kullanıcılar buraya dinamik olarak eklenecek -->
-                    <tr class="empty-row">
-                        <td colspan="7" class="text-center">
-                            <div class="empty-state">
-                                <span class="empty-icon">📋</span>
-                                <p>Kullanıcı listesi yükleniyor...</p>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <div class="user-filters">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Kullanıcı ara...">
+                        <button class="search-btn">🔍</button>
+                    </div>
+                    <div class="filter-options">
+                        <select id="roleFilter">
+                            <option value="">Tüm Roller</option>
+                            <option value="admin">Admin</option>
+                            <option value="operator">Operatör</option>
+                        </select>
+                        <select id="statusFilter">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Pasif</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ad Soyad</th>
+                                <th>E-posta</th>
+                                <th>Rol</th>
+                                <th>Durum</th>
+                                <th>Oluşturulma Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td>1</td>
+                                <td>Admin Kullanıcı</td>
+                                <td>admin@sistem.com</td>
+                                <td><span class="role-badge admin">Admin</span></td>
+                                <td><span class="status-badge active">Aktif</span></td>
+                                <td>01.01.2024</td>
+                                <td>
+                                    <button class="action-btn edit" data-user-id="1">Düzenle</button>
+                                    <button class="action-btn delete" data-user-id="1">Sil</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Test Kullanıcı</td>
+                                <td>test@sistem.com</td>
+                                <td><span class="role-badge user">Kullanıcı</span></td>
+                                <td><span class="status-badge active">Aktif</span></td>
+                                <td>15.01.2024</td>
+                                <td>
+                                    <button class="action-btn edit" data-user-id="2">Düzenle</button>
+                                    <button class="action-btn delete" data-user-id="2">Sil</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button class="pagination-btn" id="prevPage">Önceki</button>
+                    <span class="page-info">Sayfa 1 / 1</span>
+                    <button class="pagination-btn" id="nextPage">Sonraki</button>
+                </div>
+            </div>
+            </main>
         </div>
     </div>
 
-    <!-- Add/Edit User Modal -->
-    <div id="user-modal" class="modal">
+    <!-- Kullanıcı Ekle/Düzenle Modal -->
+    <div id="userModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">➕ Yeni Kullanıcı Ekle</h2>
-                <button class="modal-close" id="close-modal">&times;</button>
+                <h3 id="modalTitle">Yeni Kullanıcı Ekle</h3>
+                <span class="close">&times;</span>
             </div>
-            <form id="user-form">
-                <input type="hidden" id="user-id">
-                
+            <form id="userForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="user-username">Kullanıcı Adı *</label>
-                        <input type="text" id="user-username" required 
-                               placeholder="kullanici_adi" 
-                               pattern="[a-zA-Z0-9_]+" 
-                               title="Sadece harf, rakam ve alt çizgi kullanın">
-                        <small class="form-hint">Sadece harf, rakam ve alt çizgi</small>
+                        <label for="firstName">Ad</label>
+                        <input type="text" id="firstName" name="firstName" required>
                     </div>
                     <div class="form-group">
-                        <label for="user-password">Şifre *</label>
-                        <div class="password-input-wrapper">
-                            <input type="password" id="user-password" required 
-                                   placeholder="********" minlength="4">
-                            <button type="button" class="toggle-password" id="toggle-password">
-                                <span class="eye-icon">👁️</span>
-                            </button>
-                        </div>
-                        <small class="form-hint">En az 4 karakter</small>
+                        <label for="lastName">Soyad</label>
+                        <input type="text" id="lastName" name="lastName" required>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="user-name">Ad Soyad</label>
-                        <input type="text" id="user-name" placeholder="Ahmet Yılmaz">
-                    </div>
-                    <div class="form-group">
-                        <label for="user-role">Rol *</label>
-                        <select id="user-role" required>
-                            <option value="">Rol Seçin</option>
-                            <option value="admin">👑 Admin</option>
-                            <option value="operator">⚙️ Operator</option>
-                            <option value="user">👤 Kullanıcı</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="email">E-posta</label>
+                    <input type="email" id="email" name="email" required>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="user-status">Durum</label>
-                        <select id="user-status">
-                            <option value="active">✅ Aktif</option>
-                            <option value="inactive">❌ Pasif</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password">
                 </div>
-
+                <div class="form-group">
+                    <label for="role">Rol</label>
+                    <select id="role" name="role" required>
+                        <option value="">Seçin...</option>
+                        <option value="admin">Admin</option>
+                        <option value="operator">Operator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status">Durum</label>
+                    <select id="status" name="status" required>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Pasif</option>
+                    </select>
+                </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="cancel-btn">İptal</button>
-                    <button type="submit" class="btn btn-primary" id="save-user-btn">
-                        <span>💾</span> Kaydet
-                    </button>
+                    <button type="button" class="cancel-btn" id="cancelBtn">İptal</button>
+                    <button type="submit" class="save-btn">Kaydet</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="modal modal-small">
-        <div class="modal-content">
-            <div class="modal-header warning">
-                <h2>⚠️ Kullanıcı Sil</h2>
-                <button class="modal-close" id="close-delete-modal">&times;</button>
+    <!-- Silme Onay Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h3>Kullanıcı Sil</h3>
+                <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <p class="warning-text">
-                    <strong id="delete-username"></strong> kullanıcısını silmek istediğinize emin misiniz?
-                </p>
-                <p class="warning-subtext">Bu işlem geri alınamaz!</p>
+                <p>Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+                <div class="user-info" id="deleteUserInfo"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" id="cancel-delete">İptal</button>
-                <button type="button" class="btn btn-danger" id="confirm-delete">
-                    <span>🗑️</span> Sil
-                </button>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" id="cancelDeleteBtn">İptal</button>
+                <button type="button" class="delete-confirm-btn" id="confirmDeleteBtn">Sil</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden"></div>
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay hidden">
-        <div class="loading-spinner"></div>
-        <p>Yükleniyor...</p>
-    </div>
-
-    <!-- Scripts -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/user-api.js"></script>
-    <script src="js/user-management.js"></script>
-    
-    <!-- User Management'i Başlat -->
-    <script>
-        // Sayfa yüklendiğinde kullanıcı yönetimini başlat
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Kullanıcı yönetimi sayfası yükleniyor...');
-            
-            // UserManagement modülünü başlat
-            if (window.UserManagement) {
-                UserManagement.init();
-                console.log('✅ UserManagement başlatıldı');
-            } else {
-                console.error('❌ UserManagement modülü bulunamadı');
-            }
-        });
-    </script>
+    <script src="js/kullanici-yonetimi.js"></script>
 </body>
 </html>

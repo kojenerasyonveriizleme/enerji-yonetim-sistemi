@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Takip - Enerji Yönetim Sistemi</title>
+    <link rel="stylesheet" href="css/motor-takip.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sol Navigasyon Menüsü -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/koruma_logo_1.png" alt="Logo" class="logo">
+                    <div class="company-name">KOJENERASYON</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="anasayfa.html" class="menu-link">
+                        <span class="menu-icon">🏠</span>
+                        <span class="menu-text">Ana Sayfa</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="saatlik-veri-giris.html" class="menu-link">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Saatlik Veri Girişi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="gunluk-veri-giris.html" class="menu-link">
+                        <span class="menu-icon">📆</span>
+                        <span class="menu-text">Günlük Veri Girişi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="buhar-verisi.html" class="menu-link">
+                        <span class="menu-icon">💨</span>
+                        <span class="menu-text">Buhar Verisi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="vardiya.html" class="menu-link">
+                        <span class="menu-icon">👥</span>
+                        <span class="menu-text">Vardiya Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="motor-takip.html" class="menu-link">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Motor Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="kojen-motor-veri.html" class="menu-link">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-text">Kojen Motor Veri</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="kojen-enerji-veri.html" class="menu-link">
+                        <span class="menu-icon">⚡</span>
+                        <span class="menu-text">Kojen Enerji Veri</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="bakim-takibi.html" class="menu-link">
+                        <span class="menu-icon">🔧</span>
+                        <span class="menu-text">Bakım Takibi</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="stok-takip.html" class="menu-link">
+                        <span class="menu-icon">📦</span>
+                        <span class="menu-text">Stok Takip</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="kullanici-yonetimi.html" class="menu-link">
+                        <span class="menu-icon">👤</span>
+                        <span class="menu-text">Kullanıcı Yönetimi</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="sidebarLogout">Çıkış Yap</button>
+            </div>
+        </nav>
+
+        <!-- Ana İçerik Alanı -->
+        <div class="main-content">
+            <!-- Üst Header -->
+            <header class="header">
+                <div class="header-top">
+                    <div class="company-info">
+                        <h1>KORUMA KLOR ALKALİ ŞİRKETLER GRUBU</h1>
+                        <h2>KOJENERASYON BÖLÜMÜ</h2>
+                    </div>
+                    <div class="user-info">
+                        <span class="welcome-text">Hoşgeldin, <span id="user-name-display">Admin</span></span>
+                        <button class="logout-btn" id="headerLogout">Çıkış Yap</button>
+                    </div>
+                </div>
+                <div class="header-bottom">
+                    <h3>Denizli Tesisi Kontrol Paneli</h3>
+                </div>
+            </header>
+
+            <!-- Dashboard İçeriği -->
+            <main class="dashboard-content">
+                <!-- Motor Takip Form -->
+                <div class="motor-tracking-container">
+                    <div class="tracking-form">
+                        <form id="motor-tracking-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tracking-date">Tarih</label>
+                                    <input type="date" id="tracking-date" name="tracking-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tracking-time">Saat</label>
+                                    <input type="text" id="tracking-time" name="tracking-time" readonly style="background: #f8f9fa; cursor: default;" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="motor-select">Motor</label>
+                                    <select id="motor-select" name="motor-select" required>
+                                        <option value="">Motor seçin...</option>
+                                        <option value="gm1">GM-1</option>
+                                        <option value="gm2">GM-2</option>
+                                        <option value="gm3">GM-3</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="operator">Operatör</label>
+                                    <select id="operator" name="operator" required>
+                                        <option value="">Operatör seçin...</option>
+                                        <option value="ibrahim-ogun">İbrahim Ogün Şahin</option>
+                                        <option value="yakup-can">Yakup Can Cin</option>
+                                        <option value="oguzhan-yaylali">Oğuzhan Yaylalı</option>
+                                        <option value="altan-hunoglu">Altan Hunoğlu</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shift">Vardiya (Otomatik)</label>
+                                    <select id="shift" name="shift" required>
+                                        <option value="">Vardiya seçin...</option>
+                                        <option value="morning">Gündüz (08/16)</option>
+                                        <option value="evening">Akşam (16/24)</option>
+                                        <option value="night">Gece (24/08)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label for="kontrol-yerleri">Kontrol Yerleri</label>
+                                    <select id="kontrol-yerleri" name="kontrol-yerleri" required>
+                                        <option value="">Kontrol yeri seçin...</option>
+                                        <option value="ht">HT</option>
+                                        <option value="lt">LT</option>
+                                        <option value="yag-seviyesi">Yağ Seviyesi</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Motor Fotoğrafı</label>
+                                <div class="photo-upload-container">
+                                    <div class="photo-upload-area" id="photo-upload-area">
+                                        <div class="photo-upload-icon">
+                                            <i class="fas fa-camera"></i>
+                                        </div>
+                                        <p class="photo-upload-text">Fotoğraf çekmek için tıklayın veya sürükleyin</p>
+                                        <input type="file" id="motor-photo" name="motor-photo" accept="image/*" capture="environment" class="photo-input">
+                                    </div>
+                                    <div class="photo-preview" id="photo-preview" style="display: none;">
+                                        <img id="preview-image" src="" alt="Motor Fotoğrafı">
+                                        <button type="button" class="remove-photo-btn" id="remove-photo">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" id="clear-form">
+                                    <i class="fas fa-eraser"></i>
+                                    Formu Temizle
+                                </button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Son Kayıtlar -->
+                    <div class="recent-records">
+                        <div class="records-header">
+                            <h3>Son Kayıtlar</h3>
+                            <div class="record-counter">
+                                <span class="counter-label">Toplam Kayıt:</span>
+                                <span class="counter-value" id="total-records-count">0</span>
+                            </div>
+                        </div>
+                        <div class="records-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Saat</th>
+                                        <th>Motor Tipi</th>
+                                        <th>Operatör</th>
+                                        <th>Vardiya</th>
+                                        <th>Fotoğraf</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="records-tbody">
+                                    <!-- Kayıtlar JavaScript ile doldurulacak -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bildirim Modal -->
+    <div class="notification-modal" id="notification-modal">
+        <div class="notification-content">
+            <div class="notification-header">
+                <h3>Bildirimler</h3>
+                <button class="close-modal" id="close-notifications">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="notification-list">
+                <div class="notification-item unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notification-text">
+                        <h4>GM-1 Motor Bakım Zamanı</h4>
+                        <p>GM-1 motorunun 2000 saat bakımı zamanı gelmiştir</p>
+                        <span class="notification-time">2 saat önce</span>
+                    </div>
+                </div>
+                <div class="notification-item unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <div class="notification-text">
+                        <h4>Yüksek Sıcaklık Uyarısı</h4>
+                        <p>GM-2 motor sıcaklığı normal değerlerin üzerinde</p>
+                        <span class="notification-time">4 saat önce</span>
+                    </div>
+                </div>
+                <div class="notification-item unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="notification-text">
+                        <h4>Günlük Rapor Hazır</h4>
+                        <p>Bugünün enerji tüketim raporu oluşturulmuştur</p>
+                        <span class="notification-time">6 saat önce</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/motor-takip.js"></script>
+</body>
+</html>
