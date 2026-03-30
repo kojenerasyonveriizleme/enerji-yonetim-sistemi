@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Vardiya aralıkları
     const vardiyaSaatAraliklari = {
-        '08-16': { baslangic: 7, bitis: 15, baslangicSaat: '07:00', bitisSaat: '15:00' },
-        '16-24': { baslangic: 15, bitis: 23, baslangicSaat: '15:00', bitisSaat: '23:00' },
+        '08-16': { baslangic: 7, bitis: 16, baslangicSaat: '07:00', bitisSaat: '16:00' },
+        '16-24': { baslangic: 15, bitis: 24, baslangicSaat: '15:00', bitisSaat: '24:00' },
         '24-08': { baslangic: 23, bitis: 7, baslangicSaat: '23:00', bitisSaat: '07:00' }
     };
 
@@ -188,16 +188,27 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function loadVardiyaData() {
         const vardiya = vardiyaSecimi.value, tarih = tarihSecimi.value, motor = selectedMotor;
-        if (!vardiya || !tarih || !motor) return;
+        console.log('DEBUG loadVardiyaData:', { vardiya, tarih, motor });
+        if (!vardiya || !tarih || !motor) { console.log('DEBUG: Eksik parametre'); return; }
         const tableBody = document.getElementById('vardiyaTableBody'), noDataMessage = document.getElementById('noDataMessage');
-        if (!tableBody) return;
+        if (!tableBody) { console.log('DEBUG: tableBody bulunamadı'); return; }
         tableBody.innerHTML = '';
         try {
             const result = await getAllEnerjiRecords();
-            if (!result.success || !result.data?.length) { if (noDataMessage) noDataMessage.style.display = 'block'; return; }
+            console.log('DEBUG getAllEnerjiRecords result:', result);
+            if (!result.success || !result.data?.length) { console.log('DEBUG: Veri yok veya başarısız'); if (noDataMessage) noDataMessage.style.display = 'block'; return; }
             let searchTarih = tarih;
             if (searchTarih.includes('-')) { const parts = searchTarih.split('-'); searchTarih = `${parts[2]}.${parts[1]}.${parts[0]}`; }
-            const filtered = result.data.filter(r => (r.tarih || '') === searchTarih && kayitVardiyaAraligindaMi(r.saat || '', vardiya) && (r.motor || '') === motor);
+            console.log('DEBUG searchTarih:', searchTarih);
+            console.log('DEBUG result.data[0]:', result.data[0]);
+            const filtered = result.data.filter(r => {
+                const matchTarih = (r.tarih || '') === searchTarih;
+                const matchVardiya = kayitVardiyaAraligindaMi(r.saat || '', vardiya);
+                const matchMotor = (r.motor || '') === motor;
+                console.log('DEBUG filter:', { rTarih: r.tarih, rSaat: r.saat, rMotor: r.motor, matchTarih, matchVardiya, matchMotor });
+                return matchTarih && matchVardiya && matchMotor;
+            });
+            console.log('DEBUG filtered:', filtered);
             filtered.sort((a, b) => (getSaatDegeri(a.saat) || 0) - (getSaatDegeri(b.saat) || 0));
             if (!filtered.length) { if (noDataMessage) { noDataMessage.textContent = `${motor} motoru için bu vardiya saat aralığında henüz kayıt bulunmamaktadır.`; noDataMessage.style.display = 'block'; } return; }
             if (noDataMessage) noDataMessage.style.display = 'none';
