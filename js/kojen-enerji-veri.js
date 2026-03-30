@@ -216,6 +216,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         this.classList.add('active');
         selectedMotor = this.dataset.motor;
         showMessage(`${selectedMotor} motoru seçildi!`, 'info');
+        // Inputları temizle
+        document.querySelectorAll('.kojen-input').forEach(input => {
+            input.value = '';
+            input.style.background = 'white';
+            input.style.color = '#2c3e50';
+        });
         await loadVardiyaData();
         await checkAndUpdateFormStatus();
     }));
