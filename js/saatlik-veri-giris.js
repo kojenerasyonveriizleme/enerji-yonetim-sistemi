@@ -8,7 +8,7 @@
 // ============================================
 const SAATLIK_CONFIG = {
     // Google Apps Script Web App URL
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxsD-AOOElLcpNJreW8ziyjCNXlBS6dqINZMRDRmDpLO9Er0TEfINDjugnkn8mJ6MOcoQ/exec',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxW7wFD7y92qvtArxugStYvRY_GXLM2b2e3TyybUCd297AIgckeQlInBS3S5p5sliN-Gg/exec',
     
     // Sayfa başlığı
     PAGE_NAME: 'Saatlik Veri Girişi',
@@ -37,11 +37,9 @@ const SaatlikApp = {
         }
         
         const tarihInput = document.getElementById('tarih');
-        const saatSelect = document.getElementById('saat');
         
-        if (tarihInput && saatSelect) {
+        if (tarihInput) {
             tarihInput.addEventListener('change', () => this.checkExistingRecord());
-            saatSelect.addEventListener('change', () => this.checkExistingRecord());
         }
         
         const sidebarLogout = document.getElementById('sidebarLogout');
@@ -53,38 +51,23 @@ const SaatlikApp = {
     
     setInitialValues: function() {
         const tarihInput = document.getElementById('tarih');
-        const saatSelect = document.getElementById('saat');
+        const saatInput = document.getElementById('saat');
         const vardiyaSelect = document.getElementById('vardiya');
         
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
+        const currentHour = String(today.getHours()).padStart(2, '0') + ':00';
         
         if (tarihInput) tarihInput.value = `${year}-${month}-${day}`;
         
-        if (saatSelect) {
-            saatSelect.innerHTML = '';
-            for (let i = 0; i < 24; i++) {
-                const hour = String(i).padStart(2, '0');
-                const option = document.createElement('option');
-                option.value = `${hour}:00`;
-                option.textContent = `${hour}:00`;
-                saatSelect.appendChild(option);
-            }
-            saatSelect.value = this.getCurrentHourRounded();
+        if (saatInput) {
+            saatInput.value = currentHour;
         }
         
         if (vardiyaSelect) {
-            vardiyaSelect.value = this.getVardiyaByHour(new Date().getHours());
-        }
-        
-        if (saatSelect && vardiyaSelect) {
-            saatSelect.addEventListener('change', () => {
-                const selectedHour = parseInt(saatSelect.value.split(':')[0]);
-                vardiyaSelect.value = this.getVardiyaByHour(selectedHour);
-                this.checkExistingRecord();
-            });
+            vardiyaSelect.value = this.getVardiyaByHour(today.getHours());
         }
     },
     
@@ -299,7 +282,7 @@ const SaatlikApp = {
     
     // Form inputlarını kilitle/aç
     lockForm: function(locked) {
-        const inputs = document.querySelectorAll('#saatlikVeriForm input:not([type="date"]), #saatlikVeriForm select:not(#tarih):not(#saat), #saatlikVeriForm textarea');
+        const inputs = document.querySelectorAll('#saatlikVeriForm input:not([type="date"]):not(#saat), #saatlikVeriForm select:not(#tarih):not(#saat), #saatlikVeriForm textarea');
         
         inputs.forEach(input => {
             input.readOnly = locked;

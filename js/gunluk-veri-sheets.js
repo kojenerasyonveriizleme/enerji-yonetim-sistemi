@@ -8,7 +8,7 @@
 // ============================================
 const GUNLUK_CONFIG = {
     // Google Apps Script Web App URL
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyYK7q3FE5h87CZFtJC3XCLRbKcgtB4gznSSqRuQkDyydWP7dv5HQrXcTLhyjZPWNgUTA/exec',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwKK7a7rNHUdfXJjIz2T6aVPtM0SMCSej5brCOl_eWyNhEhGPqmXEiLkNOyap3GAWo7Rw/exec',
     
     // Sayfa başlığı
     PAGE_NAME: 'Günlük Veri Girişi',
@@ -437,6 +437,17 @@ const GunlukApp = {
             return;
         }
         
+        // Sayı formatla, boş/NaN ise '-' göster, metin ise olduğu gibi göster
+        const formatNum = (val, digits = 3) => {
+            if (!val || val === '' || val === '-') return '-';
+            // Eğer değer metin içeriyorsa (harf varsa), olduğu gibi göster
+            if (typeof val === 'string' && /[a-zA-ZğüşıöçĞÜŞİÖÇ]/.test(val)) {
+                return val;
+            }
+            const num = parseFloat(val);
+            return isNaN(num) ? (val || '-') : num.toFixed(digits);
+        };
+        
         let html = '';
         records.forEach((record, index) => {
             // Açıklama varsa göster
@@ -447,16 +458,16 @@ const GunlukApp = {
                 <tr>
                     <td class="col-num">${index + 1}</td>
                     <td class="col-date">${record.tarih || '-'} ${aciklamaBadge}</td>
-                    <td class="col-oil">${parseFloat(record.yagSeviyesi).toFixed(1) || '-'}</td>
-                    <td class="col-kuplaj">${parseFloat(record.kuplaj).toFixed(3) || '-'}</td>
-                    <td class="col-gm">${parseFloat(record.gm1).toFixed(3) || '-'}</td>
-                    <td class="col-gm">${parseFloat(record.gm2).toFixed(3) || '-'}</td>
-                    <td class="col-gm">${parseFloat(record.gm3).toFixed(3) || '-'}</td>
-                    <td class="col-consumption">${parseFloat(record.icihtiyac).toFixed(3) || '-'}</td>
-                    <td class="col-redresor">${parseFloat(record.redresor1).toFixed(3) || '-'}</td>
-                    <td class="col-redresor">${parseFloat(record.redresor2).toFixed(3) || '-'}</td>
-                    <td class="col-kojen">${parseFloat(record.kojenIcihtiyac).toFixed(3) || '-'}</td>
-                    <td class="col-consumption">${parseFloat(record.servisTrafo).toFixed(3) || '-'}</td>
+                    <td class="col-oil">${formatNum(record.yagSeviyesi, 1)}</td>
+                    <td class="col-kuplaj">${formatNum(record.kuplaj, 3)}</td>
+                    <td class="col-gm">${formatNum(record.gm1, 3)}</td>
+                    <td class="col-gm">${formatNum(record.gm2, 3)}</td>
+                    <td class="col-gm">${formatNum(record.gm3, 3)}</td>
+                    <td class="col-consumption">${formatNum(record.icihtiyac, 3)}</td>
+                    <td class="col-redresor">${formatNum(record.redresor1, 3)}</td>
+                    <td class="col-redresor">${formatNum(record.redresor2, 3)}</td>
+                    <td class="col-kojen">${formatNum(record.kojenIcihtiyac, 3)}</td>
+                    <td class="col-consumption">${formatNum(record.servisTrafo, 3)}</td>
                 </tr>
             `;
         });

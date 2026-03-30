@@ -13,7 +13,7 @@
 // ============================================
 const BUHAR_CONFIG = {
     // Google Apps Script Web App URL
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx3Dcj_4M1gAs-0U3-YTA5wruWe-FlQQ1azPtMcXk50TAmgRBhnTKN2JpIosG3sCum-ZA/exec',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzWlHRU5gYiqayNFkv26VB2CPB1w-PYaNQbBAmWoeLW0vQs97HHzY5JdAgHZL9Zv_rRTg/exec',
     
     // Sayfa başlığı
     PAGE_NAME: 'Buhar Verisi',

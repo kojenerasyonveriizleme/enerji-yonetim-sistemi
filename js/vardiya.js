@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Vardiya Google Apps Script URL
-    const VARDIYA_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8jD_ta3Br7NkWuZFl7HILYLfb5u1zYTybdaROhcWy-gVPX-s6W6RDmYA4zqq-F_haIg/exec';
+    const VARDIYA_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyevhXxIyKd1k8z3tG8hK7nAWiG0951b-NFCnImZ-jO6RdlHMgwpN9aMU27k7QFtnLEDQ/exec';
     
     // Tarih seçicisine otomatik bugünün tarihini atama
     const tarihInput = document.getElementById('tarih');
