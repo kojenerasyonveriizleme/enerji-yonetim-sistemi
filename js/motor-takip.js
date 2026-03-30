@@ -1,8 +1,4 @@
 // Motor Takip JavaScript Fonksiyonları
-// Google Sheets + Drive Entegrasyonu
-
-// Google Apps Script URL
-const MOTOR_TAKIP_GAS_URL = 'https://script.google.com/macros/s/AKfycbz5DWF5YUhcK2X2nW0UmY914MW4CTMKqXtUlR4zJqAAZ-sGKUPmR4AXzsobjX1jAbuFXw/exec';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Sayfa yüklendiğinde çalışacak fonksiyonlar
@@ -12,16 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Motor Takip sayfası yüklendi');
 });
-
-// Dosyayı Base64'e çevir
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-    });
-}
 
 // Tarih ve Saat Güncelleme
 function updateDateTime() {
@@ -45,41 +31,8 @@ function updateDateTime() {
 
 // Motor Takip Sistemi
 function initializeMotorTracking() {
-    const form = document.getElementById('motor-tracking-form');
-    const photoInput = document.getElementById('motor-photo');
-    const photoUploadArea = document.getElementById('photo-upload-area');
-    const photoPreview = document.getElementById('photo-preview');
-    const previewImage = document.getElementById('preview-image');
-    const removePhotoBtn = document.getElementById('remove-photo');
-    const clearFormBtn = document.getElementById('clear-form');
-    
-    // Form gönderimi
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
-    
-    // Fotoğraf yükleme
-    if (photoInput && photoUploadArea) {
-        photoInput.addEventListener('change', handlePhotoUpload);
-        
-        // Fotoğraf alanına tıklama
-        photoUploadArea.addEventListener('click', handlePhotoUploadClick);
-        
-        // Drag and drop
-        photoUploadArea.addEventListener('dragover', handleDragOver);
-        photoUploadArea.addEventListener('drop', handleDrop);
-        photoUploadArea.addEventListener('dragleave', handleDragLeave);
-    }
-    
-    // Fotoğraf kaldırma
-    if (removePhotoBtn) {
-        removePhotoBtn.addEventListener('click', removePhoto);
-    }
-    
-    // Form temizleme
-    if (clearFormBtn) {
-        clearFormBtn.addEventListener('click', clearForm);
-    }
+    // Motor butonları
+    initializeMotorButtons();
     
     // Varsayılan değerleri ayarla
     setDefaultValues();
@@ -88,541 +41,193 @@ function initializeMotorTracking() {
     loadRecords();
 }
 
-// Fotoğraf Yükleme
-function handlePhotoUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-        if (file.type.startsWith('image/')) {
-            displayPhotoPreview(file);
-        } else {
-            showNotification('error', 'Hata!', 'Lütfen sadece resim dosyası seçin.');
-            e.target.value = '';
-        }
-    }
-}
-
-// Drag and Drop İşlemleri
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#667eea';
-    e.currentTarget.style.background = '#f0f4ff';
-}
-
-function handleDragLeave(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#cbd5e0';
-    e.currentTarget.style.background = '#f8fafc';
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#cbd5e0';
-    e.currentTarget.style.background = '#f8fafc';
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        const file = files[0];
-        if (file.type.startsWith('image/')) {
-            const photoInput = document.getElementById('motor-photo');
-            if (photoInput) {
-                photoInput.files = files;
-                displayPhotoPreview(file);
-            }
-        } else {
-            showNotification('error', 'Hata!', 'Lütfen sadece resim dosyası sürükleyin.');
-        }
-    }
-}
-
-// Form gönderimi - Google Sheets
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    const form = e.target;
-    const formData = new FormData(form);
-    
-    // Form verilerini al
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-    
-    // Vardiya değerini manuel olarak ekle
-    const shiftSelect = document.getElementById('shift');
-    if (shiftSelect) {
-        data['shift'] = shiftSelect.value;
-    }
-    
-    // Fotoğraf kontrolü
-    const photoInput = document.getElementById('motor-photo');
-    if (!photoInput.files || !photoInput.files[0]) {
-        showNotification('error', 'Hata!', 'Lütfen motor fotoğrafı yükleyin.');
-        return;
-    }
-    
-    // Loading göster
-    showLoading();
-    
-    try {
-        // Fotoğrafı base64'e çevir
-        const file = photoInput.files[0];
-        const base64Photo = await fileToBase64(file);
-        
-        // URL oluştur ve parametreleri ekle (GET ile gönder)
-        const url = new URL(MOTOR_TAKIP_GAS_URL);
-        url.searchParams.append('action', 'addRecord');
-        url.searchParams.append('date', data['tracking-date']);
-        url.searchParams.append('time', data['tracking-time']);
-        url.searchParams.append('kontrolYeri', data['kontrol-yerleri'] || data['motor-select']);
-        url.searchParams.append('motor', data['kontrol-yerleri'] || data['motor-select']);
-        url.searchParams.append('operator', data['operator']);
-        url.searchParams.append('shift', data['shift']);
-        url.searchParams.append('vardiya', data['shift']);
-        url.searchParams.append('photo', base64Photo.substring(0, 50000)); // Base64'ün ilk 50K'sını gönder (limit için)
-        url.searchParams.append('kaydeden', data['operator'] || 'Admin');
-        
-        // Google Apps Script'e GET ile gönder
-        const response = await fetch(url);
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('success', 'Kayıt Başarılı!', 
-                `Motor kaydı ve fotoğraf Drive/Sheets'e kaydedildi. (ID: ${result.data.id})`);
-            clearForm();
-            await loadRecords();
-        } else {
-            showNotification('error', 'Hata!', result.error || 'Kayıt oluşturulamadı');
-        }
-    } catch (err) {
-        console.error('Kayıt hatası:', err);
-        showNotification('error', 'Bağlantı Hatası', err.toString());
-    } finally {
-        hideLoading();
-    }
-}
-
-// Kayıt kontrolü - aynı motor, tarih ve saat için kayıt var mı?
-function isRecordExists(kontrolYerleri, tarih, saat) {
+// Kayıt kontrolü - aynı tarih ve saat için kayıt var mı?
+function isRecordExists(tarih, saat) {
     const records = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
     
     return records.some(record => 
-        record.motorSelector === kontrolYerleri && 
         record.date === tarih && 
         record.time === saat
     );
 }
 
-// Mobil Kamera Açma
-function handlePhotoUploadClick(e) {
-    e.preventDefault();
-    
-    // Dosya adını oluştur
-    const date = new Date();
-    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
-    const timeStr = date.toTimeString().slice(0, 5).replace(':', ''); // HHMM
-    const fileName = `${dateStr}_${timeStr}_MOTOR_FOTOGRAFI.jpg`;
-    
-    // Kamera açmayı dene
-    openCamera(fileName);
-}
+// Google Apps Script URL
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyMFTAVlLRY_ODiaogPDP09J_80i-u437fMqETUPGsbaQ29lt0iPxuNlVVmyzH8ABvJbw/exec';
 
-// Mobil/Tablet kontrolü
-function isMobileOrTablet() {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-    const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
-    return isMobile || isTablet;
-}
-
-// Kamera açma fonksiyonu
-function openCamera(fileName) {
-    showNotification('info', 'Kamera Açılıyor', 'Kamera erişimi için izin isteniyor...');
-    
-    // Camera API ile fotoğraf çek
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Kamera erişimi iste
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment', // Arka kamera
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-            } 
-        })
-        .then(function(stream) {
-            showNotification('success', 'Başarılı', 'Kamera açıldı! Fotoğraf çekmek için butona basın.');
-            // Video stream'i al
-            showCameraModal(stream, fileName);
-        })
-        .catch(function(error) {
-            console.error('Kamera erişim hatası:', error);
-            showNotification('warning', 'Kamera Hatası', 'Kamera erişimi sağlanamadı. HTTPS bağlantısı gerekebilir.');
-            // Kamera erişimi olmazsa file input'a dön
-            fallbackToFileInput(fileName);
-        });
-    } else {
-        // Camera API desteklemiyorsa file input'a dön
-        showNotification('warning', 'Desteklenmiyor', 'Tarayıcınız kamera API\'yi desteklemiyor. Dosya seçimi açılıyor.');
-        fallbackToFileInput(fileName);
-    }
-}
-
-// Kamera modal gösterimi
-function showCameraModal(stream, fileName) {
-    // Modal oluştur
-    const modal = document.createElement('div');
-    modal.className = 'camera-modal';
-    modal.innerHTML = `
-        <div class="camera-modal-content">
-            <div class="camera-header">
-                <h3>Motor Fotoğrafı Çek</h3>
-                <button class="camera-close" id="camera-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="camera-body">
-                <video id="camera-video" autoplay playsinline></video>
-                <canvas id="camera-canvas" style="display: none;"></canvas>
-                <div class="camera-controls">
-                    <button class="camera-capture-btn" id="camera-capture">
-                        <i class="fas fa-camera"></i>
-                        Fotoğraf Çek
-                    </button>
-                    <button class="camera-switch-btn" id="camera-switch">
-                        <i class="fas fa-sync-alt"></i>
-                        Kamera Değiştir
-                    </button>
-                </div>
-                <div class="camera-info">
-                    <p><strong>Dosya Adı:</strong> ${fileName}</p>
-                    <p><strong>Tip:</strong> Motor Fotoğrafı</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Modal stilleri
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 3000;
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Video element'ine stream'i bağla
-    const video = document.getElementById('camera-video');
-    video.srcObject = stream;
-    
-    // Kamera kontrolleri
-    setupCameraControls(modal, stream, fileName);
-}
-
-// Kamera kontrollerini ayarla
-function setupCameraControls(modal, stream, fileName) {
-    const closeBtn = document.getElementById('camera-close');
-    const captureBtn = document.getElementById('camera-capture');
-    const switchBtn = document.getElementById('camera-switch');
-    const video = document.getElementById('camera-video');
-    const canvas = document.getElementById('camera-canvas');
-    
-    // Kapat
-    closeBtn.addEventListener('click', function() {
-        stream.getTracks().forEach(track => track.stop());
-        modal.remove();
-    });
-    
-    // Fotoğraf çek
-    captureBtn.addEventListener('click', function() {
-        capturePhoto(video, canvas, fileName, modal, stream);
-    });
-    
-    // Kamera değiştir (isteğe bağlı)
-    if (switchBtn) {
-        switchBtn.addEventListener('click', function() {
-            switchCamera(stream, video);
-        });
-    }
-}
-
-// Fotoğraf çek
-function capturePhoto(video, canvas, fileName, modal, stream) {
-    showNotification('info', 'Fotoğraf Çekiliyor', 'Lütfen bekleyin...');
-    
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0);
-    
-    // Canvas'tan blob oluştur
-    canvas.toBlob(function(blob) {
-        // Dosya oluştur
-        const file = new File([blob], fileName, { type: 'image/jpeg' });
-        
-        // File input'a ata
-        const photoInput = document.getElementById('motor-photo');
-        if (photoInput) {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            photoInput.files = dataTransfer.files;
-            
-            // Önizleme göster
-            displayPhotoPreview(file);
-        }
-        
-        // Stream'i durdur ve modalı kapat
-        stream.getTracks().forEach(track => track.stop());
-        modal.remove();
-        
-        showNotification('success', 'Başarılı!', `Fotoğraf başarıyla çekildi: ${fileName}`);
-    }, 'image/jpeg', 0.9);
-}
-
-// Kamera değiştir (basit implementasyon)
-function switchCamera(stream, video) {
-    // Basit kamera değiştirme - stream'i yeniden başlat
-    const currentFacingMode = stream.getVideoTracks()[0].getSettings().facingMode || 'user';
-    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-    
-    // Mevcut stream'i durdur
-    stream.getTracks().forEach(track => track.stop());
-    
-    // Yeni stream başlat
-    navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: newFacingMode } 
-    })
-    .then(function(newStream) {
-        video.srcObject = newStream;
-        // Global stream değişkenini güncelle (modal kapanınca kullanılacak)
-        window.currentCameraStream = newStream;
-    })
-    .catch(function(error) {
-        console.error('Kamera değiştirme hatası:', error);
-        showNotification('error', 'Hata', 'Kamera değiştirilemedi.');
-    });
-}
-
-// Yedek file input
-function fallbackToFileInput(fileName) {
-    const photoInput = document.getElementById('motor-photo');
-    if (photoInput) {
-        // Dosya adını ayarla (not: file input ile dosya adı değiştirilemez, sadece bilgi amaçlı)
-        showNotification('info', 'Bilgi', `Dosya adı: ${fileName}\n\nKamera erişimi bulunamadığından dosya seçimi açılıyor.`);
-        photoInput.click();
-    }
-}
-
-// Seçilen değerleri metin olarak al
-function getSelectedValuesText() {
-    const selectedValues = getSelectedValues();
-    const valueMap = {
-        'ht-basinc': 'HT BASINÇ',
-        'lt-basinc': 'LT BASINÇ',
-        'yag-seviyesi': 'YAĞ SEVİYESİ'
-    };
-    
-    return selectedValues.map(value => valueMap[value] || value).join(', ');
-}
-
-// Fotoğraf Önizleme
-function displayPhotoPreview(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const previewImage = document.getElementById('preview-image');
-        const photoPreview = document.getElementById('photo-preview');
-        const photoUploadArea = document.getElementById('photo-upload-area');
-        
-        if (previewImage && photoPreview) {
-            previewImage.src = e.target.result;
-            photoPreview.style.display = 'block';
-            photoUploadArea.style.display = 'none';
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-// Fotoğraf Kaldırma
-function removePhoto() {
-    const photoInput = document.getElementById('motor-photo');
-    const photoPreview = document.getElementById('photo-preview');
-    const photoUploadArea = document.getElementById('photo-upload-area');
-    const previewImage = document.getElementById('preview-image');
-    
-    if (photoInput) photoInput.value = '';
-    if (previewImage) previewImage.src = '';
-    if (photoPreview) photoPreview.style.display = 'none';
-    if (photoUploadArea) photoUploadArea.style.display = 'block';
-}
-
-// Drag and Drop İşlemleri
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#667eea';
-    e.currentTarget.style.background = '#f0f4ff';
-}
-
-function handleDragLeave(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#cbd5e0';
-    e.currentTarget.style.background = '#f8fafc';
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    e.currentTarget.style.borderColor = '#cbd5e0';
-    e.currentTarget.style.background = '#f8fafc';
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        const file = files[0];
-        if (file.type.startsWith('image/')) {
-            const photoInput = document.getElementById('motor-photo');
-            if (photoInput) {
-                photoInput.files = files;
-                displayPhotoPreview(file);
-            }
-        } else {
-            showNotification('error', 'Hata!', 'Lütfen sadece resim dosyası sürükleyin.');
-        }
-    }
-}
-
-// Kayıt Kaydetme
-function saveRecord(data) {
-    // LocalStorage'dan mevcut kayıtları al
-    let records = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
-    
-    // Yeni kayıt oluştur
-    const record = {
-        id: Date.now(),
-        date: data['tracking-date'],
-        time: data['tracking-time'],
-        motorSelector: data['kontrol-yerleri'],
-        operator: data['operator'],
-        shift: data['shift'],
-        photo: data['photo'],
-        createdAt: new Date().toISOString()
-    };
-    
-    // Kaydı ekle
-    records.unshift(record);
-    
-    // LocalStorage'a kaydet
-    localStorage.setItem('motorTrackingRecords', JSON.stringify(records));
-    
-    // Başarı mesajı göster
-    const operatorName = getOperatorName(data['operator']);
-    const motorSelectorName = getMotorSelectorName(data['kontrol-yerleri']);
-    const shiftName = getShiftName(data['shift']);
-    
-    const message = `Motor takip kaydı başarıyla oluşturuldu:\n` +
-                     `Tarih: ${formatDate(data['tracking-date'])}\n` +
-                     `Saat: ${data['tracking-time']}\n` +
-                     `Motor: ${motorSelectorName}\n` +
-                     `Operatör: ${operatorName}\n` +
-                     `Vardiya: ${shiftName}`;
-    
-    showNotification('success', 'Kayıt Başarılı!', message);
-    
-    // Formu temizle
-    clearForm();
-    
-    // Kayıtları yeniden yükle
-    loadRecords();
-    
-    hideLoading();
-}
-
-// Kayıtları Yükle - Google Sheets
+// Kayıtları Yükle - Google Apps Script'ten ve LocalStorage'dan çek
 async function loadRecords() {
     const tbody = document.getElementById('records-tbody');
     const counterElement = document.getElementById('total-records-count');
     
-    // Loading mesajı göster
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">Kayıtlar yükleniyor...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;"><i class="fas fa-spinner fa-spin"></i> Kayıtlar yükleniyor...</td></tr>';
+    
+    // LocalStorage'dan kayıtları al
+    const localRecords = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
     
     try {
-        // Google Sheets'ten kayıtları çek (GET ile)
-        const url = new URL(MOTOR_TAKIP_GAS_URL);
-        url.searchParams.append('action', 'getRecords');
-        
-        console.log('Fetching URL:', url.toString());
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'no-cors',  // CORS sorununu cozmek icin
-            cache: 'no-cache'
+        // Google Apps Script'ten kayıtları çek
+        const response = await fetch(GAS_URL, {
+            method: 'GET'
         });
-        
-        console.log('Response:', response);
         
         const result = await response.json();
         
-        console.log('Response data:', result);
+        tbody.innerHTML = '';
         
-        if (!result.success) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #e74c3c;">Kayıtlar yüklenemedi: ' + (result.error || 'Bilinmeyen hata') + '</td></tr>';
-            return;
+        // Her iki kaynaktan gelen kayıtları birleştir
+        let allRecords = [];
+        
+        // GAS kayıtlarını ekle
+        if (result.success && result.records) {
+            const gasRecords = result.records.map(r => ({
+                ...r,
+                source: 'gas',
+                timestamp: r.timestamp || new Date(r['Tarih'] + ' ' + r['Saat']).getTime()
+            }));
+            allRecords = [...gasRecords];
         }
         
-        const records = result.data || [];
+        // Local kayıtları ekle (syncError olanlar veya GAS'te olmayanlar)
+        localRecords.forEach(localRec => {
+            // Duplicate kontrolü - GAS'te var mı?
+            const existsInGas = allRecords.some(gasRec => 
+                gasRec['Kayıt No'] === localRec.kayitNo || 
+                gasRec['Kayit No'] === localRec.kayitNo
+            );
+            
+            if (!existsInGas || localRec.syncError) {
+                allRecords.push({
+                    'Kayıt No': localRec.kayitNo,
+                    'Kayit No': localRec.kayitNo,
+                    'Tarih': localRec.date,
+                    'Saat': localRec.time,
+                    'Motor': localRec.motor,
+                    'Kontrol Yeri': localRec.kontrolYeri,
+                    'Operatör': getOperatorName(localRec.operator),
+                    'Vardiya': getShiftName(localRec.vardiya),
+                    'Drive Link': localRec.driveLink,
+                    source: 'local',
+                    timestamp: new Date(localRec.timestamp).getTime(),
+                    fotoData: localRec.fotoData,
+                    syncError: localRec.syncError
+                });
+            }
+        });
+        
+        // Tarih/saat'e göre sırala (en yeni önce)
+        allRecords.sort((a, b) => {
+            const timeA = new Date(a['Tarih'] + ' ' + a['Saat']).getTime() || a.timestamp || 0;
+            const timeB = new Date(b['Tarih'] + ' ' + b['Saat']).getTime() || b.timestamp || 0;
+            return timeB - timeA;
+        });
         
         // Kayıt sayısını güncelle
         if (counterElement) {
-            counterElement.textContent = records.length;
+            counterElement.textContent = allRecords.length;
         }
         
-        tbody.innerHTML = '';
-        
-        if (records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">Henüz kayıt bulunmuyor</td></tr>';
+        if (allRecords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">Henüz kayıt bulunmuyor</td></tr>';
             return;
         }
         
         // Son 10 kaydı göster
-        const recentRecords = records.slice(0, 10);
+        const recentRecords = allRecords.slice(0, 10);
         
         recentRecords.forEach(record => {
-            const row = createRecordRowFromSheet(record);
+            const row = createRecordRowUnified(record);
             tbody.appendChild(row);
         });
-    } catch (err) {
-        console.error('Kayıtlar yüklenirken hata:', err);
-        console.error('Hata detayı:', err.message);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #e74c3c;">Sunucu hatası: ' + err.message + '</td></tr>';
+        
+    } catch (error) {
+        console.error('Kayıtları yükleme hatası:', error);
+        
+        // GAS hata verirse sadece local kayıtları göster
+        tbody.innerHTML = '';
+        
+        if (localRecords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">Sunucuya ulaşılamıyor ve yerel kayıt yok.</td></tr>';
+            return;
+        }
+        
+        // Local kayıtları formatla
+        const formattedLocalRecords = localRecords.map(r => ({
+            'Kayıt No': r.kayitNo,
+            'Kayit No': r.kayitNo,
+            'Tarih': r.date,
+            'Saat': r.time,
+            'Motor': r.motor,
+            'Kontrol Yeri': r.kontrolYeri,
+            'Operatör': getOperatorName(r.operator),
+            'Vardiya': getShiftName(r.vardiya),
+            'Drive Link': r.driveLink,
+            source: 'local',
+            timestamp: new Date(r.timestamp).getTime(),
+            fotoData: r.fotoData,
+            syncError: r.syncError
+        })).sort((a, b) => b.timestamp - a.timestamp);
+        
+        if (counterElement) {
+            counterElement.textContent = formattedLocalRecords.length;
+        }
+        
+        formattedLocalRecords.slice(0, 10).forEach(record => {
+            const row = createRecordRowUnified(record);
+            tbody.appendChild(row);
+        });
     }
 }
 
-// Kayıt Satırı Oluşturma - Sheet'ten
-function createRecordRowFromSheet(record) {
+// Sheets'ten ve LocalStorage'dan gelen kayıt için birleşik satır oluşturma
+function createRecordRowUnified(record) {
     const row = document.createElement('tr');
     
-    const operatorName = getOperatorName(record.operator);
-    const motorName = getMotorSelectorName(record.kontrolYeri || record.motor);
-    const shiftName = getShiftName(record.shift || record.vardiya);
+    const rawMotor = record['Motor'] || record['Motor'] || '-';
+    const motorName = formatMotorName(rawMotor);
+    const operatorName = record['Operatör'] || record['Operatör'] || '-';
+    const vardiya = record['Vardiya'] || record['Vardiya'] || '-';
+    const tarih = record['Tarih'] || record['Tarih'] || '-';
+    const saat = record['Saat'] || record['Saat'] || '-';
+    const kontrolYeri = record['Kontrol Yeri'] || record['KontrolYeri'] || '-';
+    const fileUrl = record['Drive Link'] || record['Drive Link'] || '';
+    const kayitNo = record['Kayit No'] || record['Kayıt No'] || '-';
+    const source = record.source || 'gas';
+    const fotoData = record.fotoData;
+    const syncError = record.syncError;
+    
+    const kontrolAdi = kontrolYeri === 'ht' ? 'HT' : kontrolYeri === 'lt' ? 'LT' : kontrolYeri === 'yag' ? 'Yağ' : kontrolYeri;
+    
+    // Kaynak göstergesi
+    const sourceBadge = source === 'local' 
+        ? `<span style="background: ${syncError ? '#dc3545' : '#ffc107'}; color: ${syncError ? 'white' : '#333'}; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px;">${syncError ? 'SENKRONIZE' : 'YEREL'}</span>`
+        : '<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px;">BULUT</span>';
+    
+    // Fotoğraf görüntüleme linki
+    let photoLink;
+    if (fileUrl) {
+        photoLink = `<a href="${fileUrl}" target="_blank" style="color: #667eea; text-decoration: none;">
+            <i class="fas fa-image"></i> Görüntüle
+        </a>`;
+    } else if (fotoData && source === 'local') {
+        // Local fotoğraf için data URL
+        photoLink = `<a href="${fotoData}" target="_blank" style="color: #ffc107; text-decoration: none;">
+            <i class="fas fa-image"></i> Yerel Görüntü
+        </a>`;
+    } else {
+        photoLink = '<span style="color: #64748b;">Fotoğraf yok</span>';
+    }
     
     row.innerHTML = `
-        <td>${formatDate(record.date)}</td>
-        <td>${record.time}</td>
-        <td>${motorName}</td>
+        <td>${formatDate(tarih)}</td>
+        <td>${saat}</td>
+        <td>${motorName} ${sourceBadge}</td>
+        <td>${kontrolAdi}</td>
         <td>${operatorName}</td>
-        <td>${shiftName}</td>
-        <td>
-            ${record.photoUrl 
-                ? `<img src="${record.photoUrl}" alt="Motor Fotoğrafı" onclick="viewPhoto('${record.photoUrl}')">` 
-                : '<span style="color: #64748b;">Fotoğraf yok</span>'
-            }
-        </td>
+        <td>${vardiya}</td>
+        <td>${photoLink}</td>
         <td>
             <div class="action-buttons">
-                <button class="action-btn view-btn" onclick="viewRecordById('${record.id}')">
+                <button class="action-btn view-btn" onclick="viewRecordFromSheet('${kayitNo}')">
                     <i class="fas fa-eye"></i> Gör
                 </button>
             </div>
@@ -632,84 +237,201 @@ function createRecordRowFromSheet(record) {
     return row;
 }
 
-// Eski localStorage kayıt satırı (geriye uyumluluk için)
-function createRecordRow(record) {
-    const row = document.createElement('tr');
-    
-    const operatorName = getOperatorName(record.operator);
-    const motorSelectorName = getMotorSelectorName(record.motorSelector || record.kontrolYeri);
-    const shiftName = getShiftName(record.shift || record.vardiya);
-    
-    row.innerHTML = `
-        <td>${formatDate(record.date)}</td>
-        <td>${record.time}</td>
-        <td>${motorSelectorName}</td>
-        <td>${operatorName}</td>
-        <td>${shiftName}</td>
-        <td>
-            ${record.photo || record.photoUrl ? 
-                `<img src="${record.photo || record.photoUrl}" alt="Motor Fotoğrafı" onclick="viewPhoto('${record.photo || record.photoUrl}')">` : 
-                '<span style="color: #64748b;">Fotoğraf yok</span>'
-            }
-        </td>
-        <td>
-            <div class="action-buttons">
-                <button class="action-btn view-btn" onclick="viewRecord('${record.id}')">
-                    <i class="fas fa-eye"></i> Gör
-                </button>
-            </div>
-        </td>
-    `;
-    
-    return row;
-}
 
-// Kayıt Silme
-function deleteRecord(recordId) {
-    if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+// Local kayıt sil
+function deleteLocalRecord(kayitNo) {
+    // Onay iste
+    if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) {
         return;
     }
     
-    let records = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
-    records = records.filter(record => record.id != recordId);
-    localStorage.setItem('motorTrackingRecords', JSON.stringify(records));
+    // LocalStorage'dan kayıtları al
+    const localRecords = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
     
-    showNotification('success', 'Başarılı', 'Kayıt başarıyla silindi.');
-    loadRecords();
+    // Kaydı bul ve sil
+    const index = localRecords.findIndex(r => r.kayitNo === kayitNo);
+    
+    if (index !== -1) {
+        // Kaydı sil
+        localRecords.splice(index, 1);
+        
+        // LocalStorage'ı güncelle
+        localStorage.setItem('motorTrackingRecords', JSON.stringify(localRecords));
+        
+        showNotification('success', 'Silindi', 'Kayıt başarıyla silindi.');
+        
+        // Kayıtları yeniden yükle
+        loadRecords();
+    } else {
+        showNotification('error', 'Hata', 'Kayıt bulunamadı.');
+    }
 }
 
-// Kayıt Görüntüleme
-function viewRecord(recordId) {
-    const records = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
-    const record = records.find(r => r.id == recordId);
+// Kayıt detaylarını görüntüle
+function viewRecordFromSheet(kayitNo) {
+    // LocalStorage'dan kayıtları kontrol et
+    const localRecords = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
     
-    if (!record) return;
+    // Farklı formatlarda ara
+    let localRecord = localRecords.find(r => r.kayitNo === kayitNo);
     
-    const operatorName = getOperatorName(record.operator);
-    const motorSelectorName = getMotorSelectorName(record.motorSelector);
-    const shiftName = getShiftName(record.shift);
+    // Bulunamazsa, kayitNo içeren kayıtları ara (LOCAL- önekli kayıtlar için)
+    if (!localRecord && kayitNo.includes('LOCAL-')) {
+        const timestamp = kayitNo.replace('LOCAL-', '');
+        localRecord = localRecords.find(r => 
+            r.kayitNo && r.kayitNo.includes(timestamp)
+        );
+    }
     
-    const message = `Motor Takip Kaydı\n\n` +
-                     `Tarih: ${formatDate(record.date)}\n` +
-                     `Saat: ${record.time}\n` +
-                     `Motor: ${motorSelectorName}\n` +
-                     `Operatör: ${operatorName}\n` +
-                     `Vardiya: ${shiftName}\n` +
-                     `Oluşturulma: ${new Date(record.createdAt).toLocaleString('tr-TR')}`;
+    // Hala bulunamazsa, tarih/saat/motor kombinasyonu ile eşleştirme dene
+    if (!localRecord) {
+        // Tablodaki satır verilerini almak için DOM'dan bilgi çek
+        const rows = document.querySelectorAll('#records-tbody tr');
+        for (const row of rows) {
+            const viewBtn = row.querySelector('.view-btn');
+            if (viewBtn && viewBtn.getAttribute('onclick').includes(kayitNo)) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 6) {
+                    const tarih = cells[0].textContent.trim();
+                    const saat = cells[1].textContent.trim();
+                    const motorText = cells[2].textContent.trim();
+                    
+                    // Tarihi parse et (format: DD.MM.YYYY)
+                    const dateParts = tarih.split('.');
+                    if (dateParts.length === 3) {
+                        const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                        const motor = motorText.includes('GM-1') ? 'gm1' : 
+                                     motorText.includes('GM-2') ? 'gm2' : 'gm3';
+                        
+                        // Eşleşen kaydı bul
+                        localRecord = localRecords.find(r => 
+                            r.date === formattedDate && 
+                            r.time === saat && 
+                            r.motor === motor
+                        );
+                    }
+                    break;
+                }
+            }
+        }
+    }
     
-    showNotification('info', 'Kayıt Detayları', message);
+    if (localRecord) {
+        // Local kayıt bulundu - modal ile göster
+        showRecordModal(localRecord);
+    } else {
+        // GAS kaydı için bilgi mesajı
+        showNotification('info', 'Kayıt', `Kayıt No: ${kayitNo} - Detaylar için Google Sheets'i kontrol edin.`);
+    }
 }
 
-// Fotoğraf Görüntüleme
-function viewPhoto(photoSrc) {
+// Kayıt detay modalı göster
+function showRecordModal(record) {
     const modal = document.createElement('div');
-    modal.className = 'photo-modal';
+    modal.className = 'record-modal';
+    modal.id = 'record-modal';
+    
+    const motorName = record.motor === 'gm1' ? 'GM-1' : record.motor === 'gm2' ? 'GM-2' : 'GM-3';
+    const kontrolAdi = record.kontrolYeri === 'ht' ? 'HT' : record.kontrolYeri === 'lt' ? 'LT' : 'Yağ Seviyesi';
+    const operatorName = getOperatorName(record.operator);
+    const vardiyaName = getShiftName(record.vardiya);
+    
     modal.innerHTML = `
-        <div class="photo-modal-content">
-            <button class="photo-modal-close" onclick="this.parentElement.parentElement.remove()">
+        <div class="record-modal-content" style="
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        ">
+            <button class="record-modal-close" id="record-modal-close" style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #64748b;
+            ">
                 <i class="fas fa-times"></i>
             </button>
-            <img src="${photoSrc}" alt="Motor Fotoğrafı">
+            
+            <h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 1.5rem;">
+                <i class="fas fa-clipboard-list"></i> Kayıt Detayları
+            </h3>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Kayıt No:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${record.kayitNo}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Tarih:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${formatDate(record.date)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Saat:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${record.time}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Motor:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${motorName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Kontrol:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${kontrolAdi}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Operatör:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${operatorName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #64748b;">Vardiya:</span>
+                    <span style="font-weight: 600; color: #2c3e50;">${vardiyaName}</span>
+                </div>
+            </div>
+            
+            ${record.fotoData ? `
+                <div style="margin-top: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #64748b; font-size: 1rem;">Fotoğraf:</h4>
+                    <img src="${record.fotoData}" style="
+                        width: 100%;
+                        max-height: 300px;
+                        object-fit: contain;
+                        border-radius: 8px;
+                        border: 1px solid #e2e8f0;
+                    " />
+                    <a href="${record.fotoData}" target="_blank" style="
+                        display: block;
+                        margin-top: 10px;
+                        text-align: center;
+                        color: #667eea;
+                        text-decoration: none;
+                        padding: 10px;
+                        background: #f1f5f9;
+                        border-radius: 6px;
+                    ">
+                        <i class="fas fa-external-link-alt"></i> Tam Boy Görüntüle
+                    </a>
+                </div>
+            ` : ''}
+            
+            ${record.syncError ? `
+                <div style="
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: #fff3cd;
+                    border-radius: 8px;
+                    border-left: 4px solid #ffc107;
+                ">
+                    <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
+                    <span style="color: #856404; margin-left: 8px;">Bu kayıt henüz sunucuya senkronize edilmemiş.</span>
+                </div>
+            ` : ''}
         </div>
     `;
     
@@ -719,63 +441,25 @@ function viewPhoto(photoSrc) {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 3000;
-        cursor: pointer;
     `;
     
-    const content = modal.querySelector('.photo-modal-content');
-    content.style.cssText = `
-        position: relative;
-        max-width: 90%;
-        max-height: 90%;
-    `;
+    document.body.appendChild(modal);
     
-    const closeBtn = modal.querySelector('.photo-modal-close');
-    closeBtn.style.cssText = `
-        position: absolute;
-        top: -40px;
-        right: 0;
-        background: white;
-        border: none;
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `;
+    // Event listener'ları ekle
+    document.getElementById('record-modal-close').addEventListener('click', () => {
+        modal.remove();
+    });
     
-    const img = modal.querySelector('img');
-    img.style.cssText = `
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 8px;
-    `;
-    
-    modal.addEventListener('click', function(e) {
+    modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.remove();
         }
     });
-    
-    document.body.appendChild(modal);
-}
-
-// Form Temizleme
-function clearForm() {
-    const form = document.getElementById('motor-tracking-form');
-    if (form) {
-        form.reset();
-        removePhoto();
-        setDefaultValues();
-    }
 }
 
 // Varsayılan Değerleri Ayarlama
@@ -783,9 +467,7 @@ function setDefaultValues() {
     const dateInput = document.getElementById('tracking-date');
     const timeInput = document.getElementById('tracking-time');
     const shiftSelect = document.getElementById('shift');
-    const motorSelector = document.getElementById('kontrol-yerleri');
     const operatorSelect = document.getElementById('operator');
-    const form = document.getElementById('motor-tracking-form');
     
     // Kullanıcı adını göster
     displayUserName();
@@ -831,46 +513,16 @@ function checkAndLockForm() {
         record.date === today && record.time === '00:00'
     );
     
-    const form = document.getElementById('motor-tracking-form');
-    const motorSelector = document.getElementById('kontrol-yerleri');
     const operatorSelect = document.getElementById('operator');
-    const submitBtn = form.querySelector('button[type="submit"]');
     
     if (todayMidnightRecords.length > 0) {
-        // Kayıt varsa, hangi seçenekler için kayıt yapıldığını kontrol et
-        const recordedOptions = todayMidnightRecords.map(record => record.motorSelector);
+        // Kayıt varsa formu kilitle
+        if (operatorSelect) operatorSelect.disabled = true;
         
-        // Form elemanlarını kilitle
-        if (motorSelector) {
-            // Kayıtlı seçenekleri devre dışı bırak
-            Array.from(motorSelector.options).forEach(option => {
-                if (recordedOptions.includes(option.value)) {
-                    option.disabled = true;
-                    option.textContent += ' (Kayıtlı)';
-                }
-            });
-            
-            // Eğer tüm seçenekler kayıtlıysa formu tamamen kilitle
-            if (recordedOptions.length === motorSelector.options.length - 1) {
-                motorSelector.disabled = true;
-                if (operatorSelect) operatorSelect.disabled = true;
-                if (submitBtn) submitBtn.disabled = true;
-                
-                showNotification('warning', 'Form Kilitli', 'Tüm motor seçenekleri için bugün saat 00:00 kaydı yapılmış.');
-            } else {
-                showNotification('info', 'Kısmi Kilit', 'Bazı motor seçenekleri için bugün saat 00:00 kaydı yapılmış.');
-            }
-        }
+        showNotification('warning', 'Form Kilitli', 'Bugün saat 00:00 için kayıt yapılmış.');
     } else {
         // Kayıt yoksa, tüm elemanları aktif tut
-        if (motorSelector) {
-            Array.from(motorSelector.options).forEach(option => {
-                option.disabled = false;
-                option.textContent = option.textContent.replace(' (Kayıtlı)', '');
-            });
-        }
         if (operatorSelect) operatorSelect.disabled = false;
-        if (submitBtn) submitBtn.disabled = false;
     }
 }
 
@@ -896,24 +548,6 @@ function getOperatorName(operatorValue) {
     return operatorMap[operatorValue] || operatorValue;
 }
 
-function getMotorName(motorValue) {
-    const motorMap = {
-        'gm1': 'GM-1',
-        'gm2': 'GM-2',
-        'gm3': 'GM-3'
-    };
-    return motorMap[motorValue] || motorValue;
-}
-
-function getMotorSelectorName(motorSelectorValue) {
-    const motorSelectorMap = {
-        'ht': 'HT',
-        'lt': 'LT',
-        'yag-seviyesi': 'Yağ Seviyesi'
-    };
-    return motorSelectorMap[motorSelectorValue] || motorSelectorValue;
-}
-
 function getShiftName(shiftValue) {
     const shiftMap = {
         'morning': 'Gündüz',
@@ -921,6 +555,15 @@ function getShiftName(shiftValue) {
         'night': 'Gece'
     };
     return shiftMap[shiftValue] || shiftValue;
+}
+
+function formatMotorName(motorValue) {
+    const motorMap = {
+        'gm1': 'GM-1',
+        'gm2': 'GM-2',
+        'gm3': 'GM-3'
+    };
+    return motorMap[motorValue] || motorValue;
 }
 
 function formatDate(dateString) {
@@ -1051,23 +694,6 @@ function showNotification(type, title, message) {
     }, 5000);
 }
 
-// Loading Göster/Gizle
-function showLoading() {
-    const submitBtn = document.querySelector('.btn-primary');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading"></span> Kaydediliyor...';
-    }
-}
-
-function hideLoading() {
-    const submitBtn = document.querySelector('.btn-primary');
-    if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Kaydet';
-    }
-}
-
 // Sidebar Toggle
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.querySelector('.menu-toggle');
@@ -1133,3 +759,395 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ==================== 3 KONTROL KUTUSU FONKSİYONLARI ====================
+
+// Global değişkenler
+let selectedMotor = null;
+let currentStream = null;
+
+// Fotoğraf verilerini sakla
+const fotografVerileri = {
+    ht: null,
+    lt: null,
+    yag: null
+};
+
+// Motor Butonlarını Başlat - Güncellenmiş versiyon
+function initializeMotorButtons() {
+    const motorButtons = document.querySelectorAll('.motor-btn');
+    
+    motorButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const motor = this.dataset.motor;
+            
+            // Tüm butonlardan selected class'ını kaldır
+            motorButtons.forEach(b => b.classList.remove('selected'));
+            
+            // Tıklanan butona selected class'ı ekle
+            this.classList.add('selected');
+            
+            // Seçili motoru kaydet
+            selectedMotor = motor;
+            
+            // 3 kutuyu göster
+            gosterKontrolKutulari();
+            
+            // Bildirim göster
+            const motorName = motor === 'gm1' ? 'GM-1' : motor === 'gm2' ? 'GM-2' : 'GM-3';
+            showNotification('info', 'Motor Seçildi', `${motorName} motoru seçildi. HT, LT ve Yağ Seviyesi kayıtları için fotoğraf ekleyin.`);
+        });
+    });
+}
+
+// 3 Kontrol Kutularını Göster
+function gosterKontrolKutulari() {
+    const kontrolKutulari = document.getElementById('kontrol-kutulari');
+    const kaydetAlani = document.getElementById('kaydet-alani');
+    
+    if (kontrolKutulari) {
+        kontrolKutulari.style.display = 'grid';
+        kontrolKutulari.style.animation = 'fadeIn 0.5s ease';
+    }
+    
+    if (kaydetAlani) {
+        kaydetAlani.style.display = 'block';
+        kaydetAlani.style.animation = 'fadeIn 0.5s ease';
+    }
+}
+
+// Kamera Aç
+function openCamera(kontrolTipi) {
+    showNotification('info', 'Kamera', `${kontrolTipi.toUpperCase()} için kamera açılıyor...`);
+    
+    // Kamera API ile fotoğraf çek
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            } 
+        })
+        .then(function(stream) {
+            showCameraModal(stream, kontrolTipi);
+        })
+        .catch(function(error) {
+            console.error('Kamera erişim hatası:', error);
+            showNotification('error', 'Kamera Hatası', 'Kamera erişimi sağlanamadı.');
+        });
+    } else {
+        showNotification('error', 'Desteklenmiyor', 'Tarayıcınız kamera API\'yi desteklemiyor.');
+    }
+}
+
+// Kamera Modal Göster
+function showCameraModal(stream, kontrolTipi) {
+    // Stream'i global değişkende sakla
+    window.currentCameraStream = stream;
+    window.currentKontrolTipi = kontrolTipi;
+    
+    const modal = document.createElement('div');
+    modal.className = 'camera-modal';
+    modal.id = 'camera-modal';
+    modal.innerHTML = `
+        <div class="camera-modal-content">
+            <div class="camera-header">
+                <h3>${kontrolTipi.toUpperCase()} - Fotoğraf Çek</h3>
+                <button class="camera-close" id="camera-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="camera-body">
+                <video id="camera-video" autoplay playsinline style="width: 100%; max-height: 400px; border-radius: 8px;"></video>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button class="camera-capture-btn" id="camera-capture-btn">
+                        <i class="fas fa-camera"></i> Fotoğraf Çek
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+    `;
+    
+    document.body.appendChild(modal);
+    
+    const video = document.getElementById('camera-video');
+    video.srcObject = stream;
+    
+    // Event listener'ları ekle
+    document.getElementById('camera-close-btn').addEventListener('click', kapatKamera);
+    document.getElementById('camera-capture-btn').addEventListener('click', capturePhotoForKontrol);
+}
+
+// Kamera Modal Kapat
+function kapatKamera() {
+    if (window.currentCameraStream) {
+        window.currentCameraStream.getTracks().forEach(track => track.stop());
+        window.currentCameraStream = null;
+    }
+    const modal = document.getElementById('camera-modal');
+    if (modal) modal.remove();
+}
+
+// Fotoğraf Çek ve Kaydet - Güncellenmiş
+function capturePhotoForKontrol() {
+    const kontrolTipi = window.currentKontrolTipi;
+    const stream = window.currentCameraStream;
+    
+    if (!kontrolTipi || !stream) {
+        showNotification('error', 'Hata', 'Kamera bağlantısı bulunamadı.');
+        return;
+    }
+    
+    const video = document.getElementById('camera-video');
+    const canvas = document.getElementById('camera-canvas');
+    
+    if (!video || !canvas) {
+        showNotification('error', 'Hata', 'Kamera elemanları bulunamadı.');
+        return;
+    }
+    
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0);
+    
+    // Base64 olarak kaydet
+    const fotoData = canvas.toDataURL('image/jpeg', 0.9);
+    fotografVerileri[kontrolTipi] = fotoData;
+    
+    // Stream'i durdur
+    stream.getTracks().forEach(track => track.stop());
+    window.currentCameraStream = null;
+    
+    // Modal'ı kapat
+    const modal = document.getElementById('camera-modal');
+    if (modal) modal.remove();
+    
+    // Önizleme göster
+    gosterFotoOnizleme(kontrolTipi, fotoData);
+    
+    showNotification('success', 'Başarılı', `${kontrolTipi.toUpperCase()} fotoğrafı çekildi.`);
+}
+
+// Fotoğraf Önizlemesi Göster
+function gosterFotoOnizleme(kontrolTipi, fotoData) {
+    const yerTutucu = document.querySelector(`#kamera-${kontrolTipi} .kamera-yer-tutucu`);
+    const onizleme = document.getElementById(`foto-onizleme-${kontrolTipi}`);
+    const img = onizleme.querySelector('img');
+    
+    if (yerTutucu) yerTutucu.style.display = 'none';
+    if (onizleme) {
+        onizleme.style.display = 'block';
+        img.src = fotoData;
+    }
+}
+
+// Fotoğraf Sil
+function silFoto(kontrolTipi) {
+    fotografVerileri[kontrolTipi] = null;
+    
+    const yerTutucu = document.querySelector(`#kamera-${kontrolTipi} .kamera-yer-tutucu`);
+    const onizleme = document.getElementById(`foto-onizleme-${kontrolTipi}`);
+    const img = onizleme.querySelector('img');
+    
+    if (yerTutucu) yerTutucu.style.display = 'flex';
+    if (onizleme) {
+        onizleme.style.display = 'none';
+        img.src = '';
+    }
+    
+    showNotification('info', 'Silindi', `${kontrolTipi.toUpperCase()} fotoğrafı silindi.`);
+}
+
+// Kontrol Sil (Tüm kutuyu temizle)
+function silKontrol(kontrolTipi) {
+    silFoto(kontrolTipi);
+    showNotification('info', 'Temizlendi', `${kontrolTipi.toUpperCase()} verileri temizlendi.`);
+}
+
+// Tümünü Kaydet
+async function kaydetTumunu() {
+    if (!selectedMotor) {
+        showNotification('error', 'Hata', 'Lütfen önce bir motor seçin.');
+        return;
+    }
+    
+    const operatorSelect = document.getElementById('operator');
+    if (!operatorSelect || !operatorSelect.value) {
+        showNotification('error', 'Hata', 'Lütfen operatör seçin.');
+        return;
+    }
+    
+    // En az bir fotoğraf eklenmiş mi kontrol et
+    const fotoSayisi = Object.values(fotografVerileri).filter(f => f !== null).length;
+    if (fotoSayisi === 0) {
+        showNotification('error', 'Hata', 'En az bir kontrol için fotoğraf eklemelisiniz.');
+        return;
+    }
+    
+    showNotification('info', 'Kaydediliyor', 'Veriler kaydediliyor, lütfen bekleyin...');
+    
+    // LocalStorage kayıtları için dizi
+    const localRecords = JSON.parse(localStorage.getItem('motorTrackingRecords') || '[]');
+    const tarih = document.getElementById('tracking-date').value;
+    const saat = document.getElementById('tracking-time').value;
+    const vardiya = document.getElementById('shift').value;
+    const operator = operatorSelect.value;
+    
+    // Aynı motor/tarih/saat kontrolü - local kayıtlarda var mı?
+    const existingRecord = localRecords.find(r => 
+        r.motor === selectedMotor && 
+        r.date === tarih && 
+        r.time === saat
+    );
+    
+    if (existingRecord) {
+        const motorDisplayName = formatMotorName(selectedMotor);
+        showNotification('error', 'Kayıt Mevcut', 
+            `${motorDisplayName} motoru için ${formatDate(tarih)} ${saat} saatinde zaten bir kayıt yapılmış. Aynı gün ve saatte ikinci kayıt yapılamaz.`);
+        return;
+    }
+    
+    showNotification('info', 'Kaydediliyor', 'Veriler kaydediliyor, lütfen bekleyin...');
+    
+    try {
+        // Her kontrol tipi için ayrı kayıt yap
+        const kayitlar = [];
+        
+        for (const [kontrolTipi, fotoData] of Object.entries(fotografVerileri)) {
+            if (fotoData) {
+                const payload = {
+                    tarih: tarih,
+                    saat: saat,
+                    motor: selectedMotor,
+                    kontrolYeri: kontrolTipi,
+                    operator: operator,
+                    vardiya: vardiya,
+                    image: fotoData
+                };
+                
+                // GAS'e gönder
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    kayitlar.push(kontrolTipi);
+                    
+                    // LocalStorage'a kaydet
+                    const localRecord = {
+                        id: Date.now() + Math.random().toString(36).substr(2, 9),
+                        date: tarih,
+                        time: saat,
+                        motor: selectedMotor,
+                        kontrolYeri: kontrolTipi,
+                        operator: operator,
+                        vardiya: vardiya,
+                        fotoData: fotoData,
+                        kayitNo: result.kayitNo || result.recordId || '-',
+                        driveLink: result.driveLink || result.fileUrl || '',
+                        timestamp: new Date().toISOString()
+                    };
+                    localRecords.unshift(localRecord);
+                }
+            }
+        }
+        
+        // LocalStorage'ı güncelle
+        localStorage.setItem('motorTrackingRecords', JSON.stringify(localRecords));
+        
+        if (kayitlar.length > 0) {
+            showNotification('success', 'Başarılı', `${kayitlar.length} kontrol kaydı yerel depoya ve sunucuya kaydedildi.`);
+            
+            // Formu temizle
+            temizleTumKontroller();
+            
+            // Kayıtları yeniden yükle
+            loadRecords();
+        } else {
+            showNotification('error', 'Hata', 'Kayıt yapılırken bir sorun oluştu.');
+        }
+        
+    } catch (error) {
+        console.error('Kayıt hatası:', error);
+        
+        // GAS hata verirse sadece localStorage'a kaydet
+        let localKayitSayisi = 0;
+        for (const [kontrolTipi, fotoData] of Object.entries(fotografVerileri)) {
+            if (fotoData) {
+                // Her kontrol için benzersiz kayitNo oluştur
+                const uniqueKayitNo = 'LOCAL-' + Date.now() + '-' + kontrolTipi + '-' + Math.random().toString(36).substr(2, 5);
+                const localRecord = {
+                    id: Date.now() + Math.random().toString(36).substr(2, 9),
+                    date: tarih,
+                    time: saat,
+                    motor: selectedMotor,
+                    kontrolYeri: kontrolTipi,
+                    operator: operator,
+                    vardiya: vardiya,
+                    fotoData: fotoData,
+                    kayitNo: uniqueKayitNo,
+                    driveLink: '',
+                    timestamp: new Date().toISOString(),
+                    syncError: true
+                };
+                localRecords.unshift(localRecord);
+                localKayitSayisi++;
+            }
+        }
+        localStorage.setItem('motorTrackingRecords', JSON.stringify(localRecords));
+        
+        if (localKayitSayisi > 0) {
+            showNotification('warning', 'Yerel Kayıt', `${localKayitSayisi} kayıt sadece yerel depoya kaydedildi. Sunucuya bağlanılamadı.`);
+            temizleTumKontroller();
+            loadRecords();
+        } else {
+            showNotification('error', 'Hata', 'Sunucuya bağlanırken hata oluştu.');
+        }
+    }
+}
+
+// Tüm Kontrolleri Temizle
+function temizleTumKontroller() {
+    // Fotoğraf verilerini temizle
+    fotografVerileri.ht = null;
+    fotografVerileri.lt = null;
+    fotografVerileri.yag = null;
+    
+    // UI'ı temizle
+    ['ht', 'lt', 'yag'].forEach(kontrolTipi => {
+        silFoto(kontrolTipi);
+    });
+    
+    // Kutuları gizle
+    const kontrolKutulari = document.getElementById('kontrol-kutulari');
+    const kaydetAlani = document.getElementById('kaydet-alani');
+    
+    if (kontrolKutulari) kontrolKutulari.style.display = 'none';
+    if (kaydetAlani) kaydetAlani.style.display = 'none';
+    
+    // Motor butonlarını sıfırla
+    const motorButtons = document.querySelectorAll('.motor-btn');
+    motorButtons.forEach(btn => btn.classList.remove('selected'));
+    selectedMotor = null;
+}

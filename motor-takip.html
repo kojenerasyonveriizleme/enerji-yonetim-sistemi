@@ -106,6 +106,11 @@
                 </div>
                 <div class="header-bottom">
                     <h3>Denizli Tesisi Kontrol Paneli</h3>
+                    <div class="motor-selector">
+                        <button type="button" class="motor-btn" data-motor="gm1">GM-1</button>
+                        <button type="button" class="motor-btn" data-motor="gm2">GM-2</button>
+                        <button type="button" class="motor-btn" data-motor="gm3">GM-3</button>
+                    </div>
                 </div>
             </header>
 
@@ -123,15 +128,6 @@
                                 <div class="form-group">
                                     <label for="tracking-time">Saat</label>
                                     <input type="text" id="tracking-time" name="tracking-time" readonly style="background: #f8f9fa; cursor: default;" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="motor-select">Motor</label>
-                                    <select id="motor-select" name="motor-select" required>
-                                        <option value="">Motor seçin...</option>
-                                        <option value="gm1">GM-1</option>
-                                        <option value="gm2">GM-2</option>
-                                        <option value="gm3">GM-3</option>
-                                    </select>
                                 </div>
                             </div>
 
@@ -157,47 +153,85 @@
                                 </div>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-group full-width">
-                                    <label for="kontrol-yerleri">Kontrol Yerleri</label>
-                                    <select id="kontrol-yerleri" name="kontrol-yerleri" required>
-                                        <option value="">Kontrol yeri seçin...</option>
-                                        <option value="ht">HT</option>
-                                        <option value="lt">LT</option>
-                                        <option value="yag-seviyesi">Yağ Seviyesi</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group full-width">
-                                <label>Motor Fotoğrafı</label>
-                                <div class="photo-upload-container">
-                                    <div class="photo-upload-area" id="photo-upload-area">
-                                        <div class="photo-upload-icon">
-                                            <i class="fas fa-camera"></i>
-                                        </div>
-                                        <p class="photo-upload-text">Fotoğraf çekmek için tıklayın veya sürükleyin</p>
-                                        <input type="file" id="motor-photo" name="motor-photo" accept="image/*" capture="environment" class="photo-input">
-                                    </div>
-                                    <div class="photo-preview" id="photo-preview" style="display: none;">
-                                        <img id="preview-image" src="" alt="Motor Fotoğrafı">
-                                        <button type="button" class="remove-photo-btn" id="remove-photo">
-                                            <i class="fas fa-times"></i>
+                            <!-- 3 Kontrol Kutusu - Motor Seçildiğinde Görünür -->
+                            <div id="kontrol-kutulari" class="kontrol-kutulari" style="display: none;">
+                                <div class="kontrol-kutu" data-kontrol="ht">
+                                    <div class="kontrol-header">
+                                        <h4>HT</h4>
+                                        <button type="button" class="sil-btn" onclick="silKontrol('ht')">
+                                            <i class="fas fa-trash"></i> Sil
                                         </button>
                                     </div>
+                                    <div class="kontrol-icerik">
+                                        <div class="kamera-alani" id="kamera-ht">
+                                            <div class="kamera-yer-tutucu" onclick="openCamera('ht')">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Fotoğraf Çek</span>
+                                            </div>
+                                            <div class="foto-onizleme" id="foto-onizleme-ht" style="display: none;">
+                                                <img src="" alt="HT Fotoğrafı">
+                                                <button type="button" class="foto-sil" onclick="silFoto('ht')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="kontrol-kutu" data-kontrol="lt">
+                                    <div class="kontrol-header">
+                                        <h4>LT</h4>
+                                        <button type="button" class="sil-btn" onclick="silKontrol('lt')">
+                                            <i class="fas fa-trash"></i> Sil
+                                        </button>
+                                    </div>
+                                    <div class="kontrol-icerik">
+                                        <div class="kamera-alani" id="kamera-lt">
+                                            <div class="kamera-yer-tutucu" onclick="openCamera('lt')">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Fotoğraf Çek</span>
+                                            </div>
+                                            <div class="foto-onizleme" id="foto-onizleme-lt" style="display: none;">
+                                                <img src="" alt="LT Fotoğrafı">
+                                                <button type="button" class="foto-sil" onclick="silFoto('lt')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="kontrol-kutu" data-kontrol="yag">
+                                    <div class="kontrol-header">
+                                        <h4>Yağ Seviyesi</h4>
+                                        <button type="button" class="sil-btn" onclick="silKontrol('yag')">
+                                            <i class="fas fa-trash"></i> Sil
+                                        </button>
+                                    </div>
+                                    <div class="kontrol-icerik">
+                                        <div class="kamera-alani" id="kamera-yag">
+                                            <div class="kamera-yer-tutucu" onclick="openCamera('yag')">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Fotoğraf Çek</span>
+                                            </div>
+                                            <div class="foto-onizleme" id="foto-onizleme-yag" style="display: none;">
+                                                <img src="" alt="Yağ Seviyesi Fotoğrafı">
+                                                <button type="button" class="foto-sil" onclick="silFoto('yag')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-actions">
-                                <button type="button" class="btn-secondary" id="clear-form">
-                                    <i class="fas fa-eraser"></i>
-                                    Formu Temizle
-                                </button>
-                                <button type="submit" class="btn-primary">
-                                    <i class="fas fa-save"></i>
-                                    Kaydet
+                            <!-- Tek Kaydet Butonu -->
+                            <div class="kaydet-alani" id="kaydet-alani" style="display: none;">
+                                <button type="button" class="btn-primary btn-kaydet" onclick="kaydetTumunu()">
+                                    <i class="fas fa-save"></i> Tümünü Kaydet
                                 </button>
                             </div>
+
                         </form>
                     </div>
 
@@ -216,7 +250,8 @@
                                     <tr>
                                         <th>Tarih</th>
                                         <th>Saat</th>
-                                        <th>Motor Tipi</th>
+                                        <th>Motor</th>
+                                        <th>Kontrol</th>
                                         <th>Operatör</th>
                                         <th>Vardiya</th>
                                         <th>Fotoğraf</th>

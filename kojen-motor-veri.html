@@ -220,11 +220,53 @@
                         <button type="button" class="btn-secondary" id="temizleBtn">🔄 TEMİZLE</button>
                         <button type="button" class="btn-danger" id="motorCalismiyorKaydetBtn">⚠️ MOTOR ÇALIŞMIYOR KAYDET</button>
                     </div>
+                    
+                    <!-- Vardiya Verileri Görüntüleme Bölümü -->
+                    <div class="vardiya-verileri-section" id="vardiyaVerileriSection">
+                        <h3 class="vardiya-title">📊 Mevcut Vardiya Verileri</h3>
+                        <div class="vardiya-info" id="vardiyaInfo">
+                            <span class="vardiya-badge" id="vardiyaBadge">08-16</span>
+                            <span class="saat-araligi">Görüntülenen Saat Aralığı: <span id="saatAraligi">07:00 - 15:00</span></span>
+                        </div>
+                        <div class="vardiya-table-container">
+                            <table class="vardiya-table" id="vardiyaTable">
+                                <thead>
+                                    <tr>
+                                        <th>Saat</th>
+                                        <th>Motor</th>
+                                        <th>JEN. YATAK SIC. (DE)</th>
+                                        <th>JEN. YATAK SIC. (NDE)</th>
+                                        <th>SOĞUTMA SUYU SIC.</th>
+                                        <th>SOĞUTMA SUYU BAS.</th>
+                                        <th>YAĞ SIC.</th>
+                                        <th>YAĞ BAS.</th>
+                                        <th>ŞARJ SIC.</th>
+                                        <th>ŞARJ BAS.</th>
+                                        <th>GAZ REG. (λ)</th>
+                                        <th>MAKİNE DAİRESİ SIC.</th>
+                                        <th>KARTER BAS.</th>
+                                        <th>ÖN KAMARA FARK BAS.</th>
+                                        <th>SARGI SIC. -1-</th>
+                                        <th>SARGI SIC. -2-</th>
+                                        <th>SARGI SIC. -3-</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vardiyaTableBody">
+                                    <!-- JavaScript ile doldurulacak -->
+                                </tbody>
+                            </table>
+                            <div class="no-data-message" id="noDataMessage" style="display: none;">
+                                Bu vardiya saat aralığında henüz kayıt bulunmamaktadır.
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
         </div>
     </div>
 
+    <script src="js/kojen-motor-sheets.js"></script>
     <script src="js/kojen-motor-veri.js"></script>
 </body>
 </html>
