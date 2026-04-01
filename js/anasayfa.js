@@ -36,14 +36,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Günlük özet verileri
     const summaryData = {
         dailyProduction: 5.53,
-        dailySteam: 12.8,
+        dailySteam: null, // Buhar verisinden çekilecek
         pendingMaintenance: 3,
         activeFaults: 1
     };
 
+    // Buhar verisi config
+    const BUHAR_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWlHRU5gYiqayNFkv26VB2CPB1w-PYaNQbBAmWoeLW0vQs97HHzY5JdAgHZL9Zv_rRTg/exec';
+
     // Sayfa yüklendiğinde verileri göster
     setTimeout(() => {
         updateMotorData();
+        loadBuharData(); // Buhar verisini çek
         updateSummaryData();
         animateProgressBars();
     }, 1000);
@@ -120,7 +124,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Progress bar animasyonu
+    // Buhar verisini çek (son kayıt)
+    async function loadBuharData() {
+        try {
+            const url = new URL(BUHAR_APPS_SCRIPT_URL);
+            url.searchParams.append('action', 'getLastRecords');
+            url.searchParams.append('count', '1');
+            
+            const response = await fetch(url, { method: 'GET', mode: 'cors' });
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                const lastRecord = result.data[0];
+                summaryData.dailySteam = parseFloat(lastRecord.buharMiktari) || 0;
+                
+                // Günlük buhar değerini güncelle
+                const dailySteamEl = document.getElementById('daily-steam-value');
+                if (dailySteamEl) {
+                    dailySteamEl.textContent = summaryData.dailySteam.toFixed(2) + ' Ton';
+                }
+            }
+        } catch (error) {
+            console.error('Buhar verisi yüklenemedi:', error);
+        }
+    }
     function animateProgressBars() {
         for (const [motorId, data] of Object.entries(motorData)) {
             const progressEl = document.getElementById(`${motorId}-progress`);

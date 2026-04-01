@@ -66,7 +66,7 @@
                         <span class="menu-text">Kojen Enerji Veri</span>
                     </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                     <a href="bakim-takibi.html" class="menu-link">
                         <span class="menu-icon">🔧</span>
                         <span class="menu-text">Bakım Takibi</span>
@@ -178,9 +178,11 @@
                                 </div>
                             </div>
                             <div class="form-group full-width">
+                                <label for="periodic-description">Bakım Notları</label>
                                 <textarea id="periodic-description" name="periodic-description" rows="4" placeholder="Yapılan bakım işlemleri..."></textarea>
                             </div>
                             <div class="form-group full-width">
+                                <label>📎 Dosya ve Fotoğraf Ekle</label>
                                 <div class="file-upload-container">
                                     <div class="file-upload-area" id="periodic-file-area">
                                         <div class="file-upload-icon">📁</div>
@@ -189,6 +191,10 @@
                                     </div>
                                     <div class="file-list" id="periodic-file-list"></div>
                                 </div>
+                            </div>
+                            <div class="form-actions full-width">
+                                <button type="submit" class="btn btn-primary">💾 Kaydet</button>
+                                <button type="reset" class="btn btn-secondary">🔄 Temizle</button>
                             </div>
                                                     </form>
                     </div>
@@ -317,9 +323,11 @@
                                 </div>
                             </div>
                             <div class="form-group full-width">
+                                <label for="normal-description">Bakım Notları</label>
                                 <textarea id="normal-description" name="normal-description" rows="4" placeholder="Yapılacak bakım işlemleri..."></textarea>
                             </div>
                             <div class="form-group full-width">
+                                <label>📎 Dosya ve Fotoğraf Ekle</label>
                                 <div class="file-upload-container">
                                     <div class="file-upload-area" id="normal-file-area">
                                         <div class="file-upload-icon">📁</div>
@@ -328,6 +336,10 @@
                                     </div>
                                     <div class="file-list" id="normal-file-list"></div>
                                 </div>
+                            </div>
+                            <div class="form-actions full-width">
+                                <button type="submit" class="btn btn-primary">💾 Kaydet</button>
+                                <button type="reset" class="btn btn-secondary">🔄 Temizle</button>
                             </div>
                                                     </form>
                     </div>
@@ -351,7 +363,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-row">
+                                <div class="form-group">
                                     <label for="fault-technician">Teknisyen</label>
                                     <div class="technician-input-group">
                                         <select id="fault-technician" name="fault-technician" required>
@@ -387,19 +400,31 @@
                                         <option value="other">Diğer</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div class="form-row">
                                 <div class="form-group">
                                     <label for="fault-time">Arıza Zamanı</label>
                                     <input type="time" id="fault-time" name="fault-time" required>
                                 </div>
                             </div>
                             <div class="form-group full-width">
-                                <label for="fault-description">Arıza Açıklaması</label>
-                                <textarea id="fault-description" name="fault-description" rows="4" placeholder="Arızanın detaylı açıklaması..." required></textarea>
+                                <label for="fault-notes">Arıza Notları</label>
+                                <textarea id="fault-notes" name="fault-notes" rows="4" placeholder="Arıza ile ilgili notları buraya yazın..."></textarea>
                             </div>
                             <div class="form-group full-width">
+                                <label>📎 Dosya ve Fotoğraf Ekle</label>
                                 <div class="file-upload-container">
+                                    <div class="file-upload-area" id="fault-file-area">
+                                        <div class="file-upload-icon">📁</div>
+                                        <p class="file-upload-text">Dosyaları buraya sürükleyin veya tıklayın</p>
+                                        <input type="file" id="fault-files" name="fault-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png" class="file-input">
+                                    </div>
                                     <div class="file-list" id="fault-file-list"></div>
                                 </div>
+                            </div>
+                            <div class="form-actions full-width">
+                                <button type="submit" class="btn btn-primary">💾 Kaydet</button>
+                                <button type="reset" class="btn btn-secondary">🔄 Temizle</button>
                             </div>
                                                     </form>
                     </div>

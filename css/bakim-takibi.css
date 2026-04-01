@@ -1039,6 +1039,16 @@ body {
     border-top: 1px solid #e0e0e0;
 }
 
+.form-actions.full-width {
+    justify-content: stretch;
+}
+
+.form-actions.full-width .btn-primary,
+.form-actions.full-width .btn-secondary {
+    flex: 1;
+    width: 100%;
+}
+
 .btn-primary {
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
     color: white;
